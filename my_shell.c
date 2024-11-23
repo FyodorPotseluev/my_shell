@@ -6,8 +6,15 @@
 #include <string.h>
 
 enum consts {
-    initial_word_size = 8
+    initial_word_size = 64
 };
+
+typedef struct tag_struct_input {
+    char c;
+    bool record_space_symbols;
+    bool end_word;
+    int curr_idx;
+} struct_input;
 
 typedef struct tag_word_item {
     char *word;
@@ -31,12 +38,12 @@ void print_list_of_words(const word_item *item)
     printf("[%s]\n", item->word);
 }
 
-void switch_record_space_symbols(bool *record_spaces)
+void switch_record_space_symbols(struct_input *input)
 {
-    if (*record_spaces)
-        *record_spaces = false;
+    if (input->record_space_symbols)
+        input->record_space_symbols = false;
     else
-        *record_spaces = true;
+        input->record_space_symbols = true;
 }
 
 void add_empty_item_to_list_of_words(word_item **item)
@@ -56,82 +63,70 @@ char *my_recalloc(char *old_short_str, int new_size)
     return new_long_str;
 }
 
-void add_character_to_word(
-    word_item **item, int *curr_idx, bool *end_word, char c
-)
+void add_character_to_word(word_item **item, struct_input *input)
 {
     static int word_size;
     char *str;
-    *end_word = false;
+    input->end_word = false;
     if (!*item)
         add_empty_item_to_list_of_words(item);
     if (!(*item)->word) {
         word_size = initial_word_size;
         (*item)->word = calloc(word_size, sizeof(char));
-        *curr_idx = 0;
+        input->curr_idx = 0;
     }
-    if (*curr_idx == word_size-1) {
+    if (input->curr_idx == word_size-1) {
         word_size *= 2;
         (*item)->word = my_recalloc((*item)->word, word_size);
     }
     str = (*item)->word;
-    str[*curr_idx] = c;
-    (*curr_idx)++;
+    str[input->curr_idx] = input->c;
+    input->curr_idx++;
 }
 
-void process_space_symbol(
-    word_item **item, int *curr_idx, bool *record_space_symbols,
-    bool *end_word, char c
-)
+void process_space_symbol(word_item **item, struct_input *input)
 {
-    if (*record_space_symbols)
-        add_character_to_word(item, curr_idx, end_word, c);
+    if (input->record_space_symbols)
+        add_character_to_word(item, input);
     else
-    if (!*end_word) {
+    if (!input->end_word) {
         add_empty_item_to_list_of_words(item);
-        *end_word = true;
+        input->end_word = true;
     }
 }
 
-void add_char_to_list_of_words(
-    word_item **item, int *curr_idx, bool *record_space_symbols,
-    bool *end_word, char c
-)
+void add_char_to_list_of_words(word_item **item, struct_input *input)
 {
-    switch (c) {
+    switch (input->c) {
         case ('\t'):
         case (' '):
-            process_space_symbol(
-                item, curr_idx, record_space_symbols, end_word, c
-            );
+            process_space_symbol(item, input);
             break;
         case ('"'):
-            switch_record_space_symbols(record_space_symbols);
+            switch_record_space_symbols(input);
             break;
         default:
-            add_character_to_word(item, curr_idx, end_word, c);
+            add_character_to_word(item, input);
     }
 }
 
 int main()
 {
     word_item *words_list = NULL;
-    int c;
     for (;;) {
-        bool record_space_symbols = false, end_word = false;
-        int curr_idx = 0;
+        struct_input input = { 0, 0, false, false };
+        int character;
         printf("> ");
-        while ((c = getchar()) != '\n') {
-            if (c == EOF) {
+        while ((character = getchar()) != '\n') {
+            if (character == EOF) {
                 free_list_of_words(words_list);
                 printf("^D\n");
                 return 0;
             }
-            add_char_to_list_of_words(
-                &words_list, &curr_idx, &record_space_symbols, &end_word, c
-            );
+            input.c = character;
+            add_char_to_list_of_words(&words_list, &input);
         }
-        if (record_space_symbols)
+        if (input.record_space_symbols)
             printf("Error: unmatched quotes\n");
         else
             print_list_of_words(words_list);
