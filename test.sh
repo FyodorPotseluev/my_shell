@@ -3,22 +3,58 @@
 input=()
 expected=()
 
-input+=( "abra schwabra kadabra" )
+input+=( $'abra schwabra kadabra\n' )
 expected+=( $'[abra]\n[schwabra]\n[kadabra]' );
 
-input+=( $'     abra\t\tschwabra \t \tkadabra' )
+input+=( $'abra   \n' )
+expected+=( $'[abra]' );
+
+input+=( $'     abra\t\tschwabra \t \tkadabra\n' )
 expected+=( $'[abra]\n[schwabra]\n[kadabra]' )
 
-input+=( $'abra \"schwabra kadabra\" \"foo    bar\"' )
+input+=( $'abra \"schwabra kadabra\" \"foo    bar\"\n' )
 expected+=( $'[abra]\n[schwabra kadabra]\n[foo    bar]' )
 
-input+=( $'abra schw\"abra ka\"dab\"ra\" foo\"    \"bar' )
+input+=( $'abra schw\"abra ka\"dab\"ra\" foo\"    \"bar\n' )
 expected+=( $'[abra]\n[schwabra kadabra]\n[foo    bar]' )
 
-input+=( $'abra schwabra kadabra\"  foo bar' )
+input+=( $'\\\"abra\\\" \\\"schwabra\\\" \\\"kadabra\\\"\n' )
+expected+=( $'[\"abra\"]\n[\"schwabra\"]\n[\"kadabra\"]' );
+
+input+=( $'\\\\abra\\\\ \\\\schwabra\\\\ \\\\kadabra\\\\\n' )
+expected+=( $'[\\abra\\]\n[\\schwabra\\]\n[\\kadabra\\]' );
+
+input+=( $'abra \\\\s\\\"c\\\\h\\\"w\\\\a\\\"b\\\\r\\\"a\\\\ kadabra\n' )
+expected+=( $'[abra]\n[\\s\"c\\h\"w\\a\"b\\r\"a\\]\n[kadabra]' );
+
+input+=( $'abra \\\\schw\"abra\\\\\\\"ka\"dab\"ra\\\"\" foo\"    \"bar\n' )
+expected+=( $'[abra]\n[\\schwabra\\\"kadabra\"]\n[foo    bar]' )
+
+input+=( $'abra \\\\schw\"a\\\\b\\\\ra\\\"k\\\"a\"dab\"ra\\\"\" foo\"    \"bar\n' )
+expected+=( $'[abra]\n[\\schwa\\b\\ra\"k\"adabra\"]\n[foo    bar]' )
+
+input+=( $'abra \\\\schw\"a\\\\b\\\"ra\\\\k\\\"a\"dab\"ra\\\"\" foo\"    \"bar\n' )
+expected+=( $'[abra]\n[\\schwa\\b\"ra\\k\"adabra\"]\n[foo    bar]' )
+
+input+=( $'abra schw\"abraka\"dab\"ra\"\\ foo\"    \"bar\n' )
+expected+=( $'Error: only the characters `\"` and `\\` can be escaped' )
+
+input+=( $'abra schw\"abra ka\"dab\"r\\a\" foo\"    \"bar\n' )
+expected+=( $'Error: only the characters `\"` and `\\` can be escaped' )
+
+input+=( $'abra schw\"abra\\ ka\"dab\"ra\" foo\"    \"bar\n' )
+expected+=( $'Error: only the characters `\"` and `\\` can be escaped' )
+
+input+=( $'abra schw\"abra ka\"dab\"ra\" f\\oo\"    \"bar\n' )
+expected+=( $'Error: only the characters `\"` and `\\` can be escaped' )
+
+input+=( $'abra schw\\\"abra ka\"dab\"ra\" foo\"    \"bar\n' )
 expected+=( $'Error: unmatched quotes' )
 
-input+=( "abraschwabrakadabra" )
+input+=( $'abra schwabra kadabra\"  foo bar\n' )
+expected+=( $'Error: unmatched quotes' )
+
+input+=( $'abraschwabrakadabra\n' )
 expected+=( "[abraschwabrakadabra]" )
 
 # Simulate EOF with empty input
