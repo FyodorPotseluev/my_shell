@@ -36,6 +36,39 @@ expected+=( $'[abra]\n[\\schwa\\b\\ra\"k\"adabra\"]\n[foo    bar]' )
 input+=( $'abra \\\\schw\"a\\\\b\\\"ra\\\\k\\\"a\"dab\"ra\\\"\" foo\"    \"bar\n' )
 expected+=( $'[abra]\n[\\schwa\\b\"ra\\k\"adabra\"]\n[foo    bar]' )
 
+input+=( $'\"\" word1 word2\n' )
+expected+=( $'[]\n[word1]\n[word2]' )
+
+input+=( $'word1 \"\" word2\n' )
+expected+=( $'[word1]\n[]\n[word2]' )
+
+input+=( $'word1 word2 \"\" word3\n' )
+expected+=( $'[word1]\n[word2]\n[]\n[word3]' )
+
+input+=( $'word1 word2 \"\"\n' )
+expected+=( $'[word1]\n[word2]\n[]' )
+
+input+=( $'word1\"\" word2\n' )
+expected+=( $'[word1]\n[word2]' )
+
+input+=( $'word1 \"\"word2\n' )
+expected+=( $'[word1]\n[word2]' )
+
+input+=( $'word1 \"\"word2\n' )
+expected+=( $'[word1]\n[word2]' )
+
+input+=( $'w\"  \"\"  \"ord\n' )
+expected+=( $'[w    ord]' )
+
+input+=( $'w\"o \"\" r\"d\n' )
+expected+=( $'[wo  rd]' )
+
+input+=( $'word \"\"\n' )
+expected+=( $'[word]\n[]' )
+
+input+=( $'word \"\n' )
+expected+=( $'Error: unmatched quotes' )
+
 input+=( $'abra schw\"abraka\"dab\"ra\"\\ foo\"    \"bar\n' )
 expected+=( $'Error: only the characters `\"` and `\\` can be escaped' )
 

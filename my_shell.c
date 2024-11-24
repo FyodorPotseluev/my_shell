@@ -37,9 +37,10 @@ void print_list_of_words(const word_item *item)
     if (!item)
         return;
     print_list_of_words(item->next);
-    if (!item->word)
-        return;
-    printf("[%s]\n", item->word);
+    if (item->word)
+        printf("[%s]\n", item->word);
+    else
+        printf("[]\n");
 }
 
 void switch_record_space_symbols(struct_input *input)
@@ -71,9 +72,9 @@ void add_current_symbol_to_word(word_item **item, struct_input *input)
 {
     static int word_size;
     char *str;
-    input->end_of_word = false;
-    if (!*item)
+    if ((!*item) || (input->end_of_word))
         add_empty_item_to_list_of_words(item);
+    input->end_of_word = false;
     if (!(*item)->word) {
         word_size = initial_word_size;
         (*item)->word = calloc(word_size, sizeof(char));
@@ -93,10 +94,8 @@ void process_space_symbol(word_item **item, struct_input *input)
     if (input->record_space_symbols)
         add_current_symbol_to_word(item, input);
     else
-    if (!input->end_of_word) {
-        add_empty_item_to_list_of_words(item);
+    if (!input->end_of_word)
         input->end_of_word = true;
-    }
 }
 
 bool current_symbol_is_incorrectly_escaped(struct_input *input)
@@ -118,12 +117,22 @@ void process_character_escape_symbol(word_item **item, struct_input *input)
         add_escaped_character_to_word(item, input);
 }
 
+void process_quote_sign_main_logic(struct_input *input)
+{
+    /* here may be some additional logic in the future */
+    switch_record_space_symbols(input);
+}
+
+void possible_case_of_adding_empty_word(word_item **item, struct_input *input);
+
 void process_quote_sign_symbol(word_item **item, struct_input *input)
 {
     if (input->character_escaping) {
         add_escaped_character_to_word(item, input);
-    } else
-        switch_record_space_symbols(input);
+    } else {
+        process_quote_sign_main_logic(input);
+        possible_case_of_adding_empty_word(item, input);
+    }
 }
 
 void add_char_to_list_of_words(word_item **item, struct_input *input)
@@ -143,12 +152,29 @@ void add_char_to_list_of_words(word_item **item, struct_input *input)
         case ('"'):
             process_quote_sign_symbol(item, input);
             break;
+        case ('\n'):
+            input->stop_reading_curr_str = true;
+            break;
         default:
             if (current_symbol_is_incorrectly_escaped(input)) {
                 input->stop_reading_curr_str = true;
                 return;
             }
             add_current_symbol_to_word(item, input);
+    }
+}
+
+void possible_case_of_adding_empty_word(word_item **item, struct_input *input)
+{
+    if ((!*item) || (input->end_of_word)) {
+        input->c = getchar();
+        if (input->c == '"') {
+            process_quote_sign_main_logic(input);
+            input->c = getchar();
+            if (input->c == ' ' || input->c == '\t' || input->c == '\n')
+                add_empty_item_to_list_of_words(item);
+        }
+        add_char_to_list_of_words(item, input);
     }
 }
 
