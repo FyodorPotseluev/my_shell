@@ -90,6 +90,24 @@ expected+=( $'Error: unmatched quotes' )
 input+=( $'abraschwabrakadabra\n' )
 expected+=( "[abraschwabrakadabra]" )
 
+input+=( "    " )
+expected+=( "" )
+
+input+=( $' \t  \t  \t\t ' )
+expected+=( "" )
+
+input+=( $'\"\"' )
+expected+=( "" )
+
+input+=( $'\"\"\"\"' )
+expected+=( "" )
+
+input+=( $'\"\" \t\"\"' )
+expected+=( "" )
+
+input+=( $' \"\" \t\"\" ' )
+expected+=( "" )
+
 # Simulate EOF with empty input
 input+=( "" )
 expected+=( "" )

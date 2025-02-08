@@ -6,7 +6,7 @@
 #include <string.h>
 
 enum consts {
-    initial_word_size = 64
+    init_tmp_wrd_arr_size = 16
 };
 
 typedef struct tag_struct_input {
@@ -23,27 +23,42 @@ typedef struct tag_word_item {
     struct tag_word_item *next;
 } word_item;
 
-void free_list_of_words(word_item *item)
+typedef struct tag_dynamic_char_arr {
+    char *arr;
+    int idx;
+    int size;
+} dynamic_char_arr;
+
+void free_list_of_words(word_item **item)
+{
+    if (!*item)
+        return;
+    free_list_of_words(&(*item)->next);
+    free((*item)->word);
+    free(*item);
+    *item = NULL;
+}
+
+void print_list_of_words_reqursive_call(const word_item *item)
 {
     if (!item)
         return;
-    free_list_of_words(item->next);
-    free(item->word);
-    free(item);
+    print_list_of_words_reqursive_call(item->next);
+    printf("[%s]\n", item->word);
 }
 
-void print_list_of_words(const word_item *item)
+void print_list_of_words(const word_item *words_list)
 {
-    if (!item)
-        return;
-    print_list_of_words(item->next);
-    if (item->word)
-        printf("[%s]\n", item->word);
-    else
-        printf("[]\n");
+    if (words_list)
+        print_list_of_words_reqursive_call(words_list);
 }
 
-void switch_record_space_symbols(struct_input *input)
+void execute_command(const word_item *words_list)
+{
+    print_list_of_words(words_list);
+}
+
+void switch_record_space_symbols(bool *record_spaces)
 {
     if (input->record_space_symbols)
         input->record_space_symbols = false;
@@ -59,95 +74,98 @@ void add_empty_item_to_list_of_words(word_item **item)
     *item = tmp;
 }
 
-char *my_recalloc(char *old_short_str, int new_size)
+char *my_realloc(char *old_short_str, int new_size)
 {
     int old_size = new_size / 2;
-    char *new_long_str = calloc(new_size, sizeof(char));
+    char *new_long_str = malloc(new_size * sizeof(char));
     memcpy(new_long_str, old_short_str, old_size);
     free(old_short_str);
     return new_long_str;
 }
 
-void add_current_symbol_to_word(word_item **item, struct_input *input)
+void add_character_to_word(
+    word_item **item, dynamic_char_arr *tmp_wrd, bool *word_ended, char c
+)
 {
-    static int word_size;
-    char *str;
-    if ((!*item) || (input->end_of_word))
+    *word_ended = false;
+    if (!*item)
         add_empty_item_to_list_of_words(item);
-    input->end_of_word = false;
-    if (!(*item)->word) {
-        word_size = initial_word_size;
-        (*item)->word = calloc(word_size, sizeof(char));
-        input->curr_idx = 0;
+    if (tmp_wrd->idx == tmp_wrd->size-1) {
+        tmp_wrd->size *= 2;
+        tmp_wrd->arr = my_realloc(tmp_wrd->arr, tmp_wrd->size);
     }
-    if (input->curr_idx == word_size-1) {
-        word_size *= 2;
-        (*item)->word = my_recalloc((*item)->word, word_size);
-    }
-    str = (*item)->word;
-    str[input->curr_idx] = input->c;
-    input->curr_idx++;
+    tmp_wrd->arr[tmp_wrd->idx] = c;
+    tmp_wrd->idx++;
 }
 
-void process_space_symbol(word_item **item, struct_input *input)
+void process_end_of_word(word_item *item, dynamic_char_arr *tmp_wrd)
 {
-    if (input->record_space_symbols)
-        add_current_symbol_to_word(item, input);
+    tmp_wrd->arr[tmp_wrd->idx] = '\0';
+    if (item) {
+        item->word = malloc((tmp_wrd->idx + 1) * sizeof(char));
+        strcpy(item->word, tmp_wrd->arr);
+    }
+    tmp_wrd->idx = 0;
+}
+
+void prepare_to_read_next_string(
+    bool *record_space_symbols, bool *word_ended,
+    bool *str_ended, dynamic_char_arr *tmp_wrd
+)
+{
+    *record_space_symbols = false;
+    *word_ended = false;
+    *str_ended = false;
+    tmp_wrd->idx = 0;
+    printf("> ");
+}
+
+void process_end_of_string(
+    word_item **words_list, bool *record_space_symbols,
+    bool *word_ended, bool *str_ended, dynamic_char_arr *tmp_wrd
+)
+{
+    if (*record_space_symbols)
+        printf("Error: unmatched quotes\n");
     else
-    if (!input->end_of_word)
-        input->end_of_word = true;
+        execute_command(*words_list);
+    free_list_of_words(words_list);
+    prepare_to_read_next_string(
+        record_space_symbols, word_ended, str_ended, tmp_wrd
+    );
 }
 
-bool current_symbol_is_incorrectly_escaped(struct_input *input)
+void process_space_symbol(
+    word_item **item, dynamic_char_arr *tmp_wrd, bool record_space_symbols,
+    bool *word_ended, char c
+)
 {
-    return (input->character_escaping);
-}
-
-void add_escaped_character_to_word(word_item **item, struct_input *input)
-{
-    input->character_escaping = false;
-    add_current_symbol_to_word(item, input);
-}
-
-void process_character_escape_symbol(word_item **item, struct_input *input)
-{
-    if (!input->character_escaping)
-        input->character_escaping = true;
+    if (record_space_symbols)
+        add_character_to_word(item, tmp_wrd, word_ended, c);
     else
-        add_escaped_character_to_word(item, input);
-}
-
-void process_quote_sign_main_logic(struct_input *input)
-{
-    /* here may be some additional logic in the future */
-    switch_record_space_symbols(input);
-}
-
-void possible_case_of_adding_empty_word(word_item **item, struct_input *input);
-
-void process_quote_sign_symbol(word_item **item, struct_input *input)
-{
-    if (input->character_escaping) {
-        add_escaped_character_to_word(item, input);
-    } else {
-        process_quote_sign_main_logic(input);
-        possible_case_of_adding_empty_word(item, input);
+    if (!*word_ended && *item) {
+        process_end_of_word(*item, tmp_wrd);
+        add_empty_item_to_list_of_words(item);
+        *word_ended = true;
     }
 }
 
-void add_char_to_list_of_words(word_item **item, struct_input *input)
+void process_character(
+    word_item **item, dynamic_char_arr *tmp_wrd, bool *record_space_symbols,
+    bool *word_ended, bool *str_ended, char c
+)
 {
     switch (input->c) {
         case ('\t'):
         case (' '):
-            if (current_symbol_is_incorrectly_escaped(input)) {
-                input->stop_reading_curr_str = true;
-                return;
-            }
-            process_space_symbol(item, input);
+            process_space_symbol(
+                item, tmp_wrd, *record_space_symbols, word_ended, c
+            );
             break;
-        case ('\\'):
-            process_character_escape_symbol(item, input);
+        case ('\n'):
+            process_end_of_word(*item, tmp_wrd);
+            *word_ended = true;
+            *str_ended = true;
             break;
         case ('"'):
             process_quote_sign_symbol(item, input);
@@ -156,45 +174,7 @@ void add_char_to_list_of_words(word_item **item, struct_input *input)
             input->stop_reading_curr_str = true;
             break;
         default:
-            if (current_symbol_is_incorrectly_escaped(input)) {
-                input->stop_reading_curr_str = true;
-                return;
-            }
-            add_current_symbol_to_word(item, input);
-    }
-}
-
-void possible_case_of_adding_empty_word(word_item **item, struct_input *input)
-{
-    if ((!*item) || (input->end_of_word)) {
-        input->c = getchar();
-        if (input->c == '"') {
-            process_quote_sign_main_logic(input);
-            input->c = getchar();
-            if (input->c == ' ' || input->c == '\t' || input->c == '\n')
-                add_empty_item_to_list_of_words(item);
-        }
-        add_char_to_list_of_words(item, input);
-    }
-}
-
-void flush_buffer()
-{
-    int c;
-    while ((c=getchar() != '\n') && (c != EOF))
-        ;
-}
-
-void print_output(word_item *words_list, struct_input *input)
-{
-    if (input->stop_reading_curr_str && input->character_escaping) {
-        printf("Error: only the characters `\"` and `\\` can be escaped\n");
-        flush_buffer();
-    }
-    else
-    if (input->record_space_symbols) {
-        printf("Error: unmatched quotes\n");
-        flush_buffer();
+            add_character_to_word(item, tmp_wrd, word_ended, c);
     }
     else
         print_list_of_words(words_list);
@@ -203,24 +183,26 @@ void print_output(word_item *words_list, struct_input *input)
 int main()
 {
     word_item *words_list = NULL;
-    for (;;) {
-        struct_input input = { 0, 0, false, false, false, false };
-        int character;
-        printf("> ");
-        while ((character = getchar()) != '\n') {
-            if (character == EOF) {
-                free_list_of_words(words_list);
-                printf("^D\n");
-                return 0;
-            }
-            input.c = character;
-            add_char_to_list_of_words(&words_list, &input);
-            if (input.stop_reading_curr_str)
-                break;
-        }
-        print_output(words_list, &input);
-        free_list_of_words(words_list);
-        words_list = NULL;
+    dynamic_char_arr tmp_wrd = { NULL, 0, init_tmp_wrd_arr_size };
+    int c;
+    bool record_space_symbols, word_ended, str_ended;
+    tmp_wrd.arr = malloc(tmp_wrd.size * sizeof(char));
+    prepare_to_read_next_string(
+        &record_space_symbols, &word_ended, &str_ended, &tmp_wrd
+    );
+    while ((c = getchar()) != EOF) {
+        process_character(
+            &words_list, &tmp_wrd, &record_space_symbols,
+            &word_ended, &str_ended, c
+        );
+        if (str_ended)
+            process_end_of_string(
+                &words_list, &record_space_symbols,
+                &word_ended, &str_ended, &tmp_wrd
+            );
     }
+    free_list_of_words(&words_list);
+    free(tmp_wrd.arr);
+    printf("^D\n");
     return 0;
 }
