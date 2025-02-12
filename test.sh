@@ -73,16 +73,43 @@ input+=( $' \t  \t  \t\t ' )
 expected+=( "" )
 
 input+=( $'\"\"' )
-expected+=( "" )
+expected+=( "[]" )
 
 input+=( $'\"\"\"\"' )
-expected+=( "" )
+expected+=( "[]" )
 
 input+=( $'\"\" \t\"\"' )
-expected+=( "" )
+expected+=( $'[]\n[]' )
 
 input+=( $' \"\" \t\"\" ' )
-expected+=( "" )
+expected+=( $'[]\n[]' )
+
+input+=( $'\"\" word1 word2' )
+expected+=( $'[]\n[word1]\n[word2]' )
+
+input+=( $'word1 \"\" word2' )
+expected+=( $'[word1]\n[]\n[word2]' )
+
+input+=( $'word1 word2 \"\" word3' )
+expected+=( $'[word1]\n[word2]\n[]\n[word3]' )
+
+input+=( $'word1 word2 \"\"' )
+expected+=( $'[word1]\n[word2]\n[]' )
+
+input+=( $'word1 \"\"word2' )
+expected+=( $'[word1]\n[word2]' )
+
+input+=( $'word1 \"\"word2' )
+expected+=( $'[word1]\n[word2]' )
+
+input+=( $'w\"  \"\"  \"ord' )
+expected+=( $'[w    ord]' )
+
+input+=( $'w\"o \"\" r\"d' )
+expected+=( $'[wo  rd]' )
+
+input+=( $'word \"\"' )
+expected+=( $'[word]\n[]' )
 
 # Simulate EOF with empty input
 input+=( "" )

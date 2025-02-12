@@ -41,6 +41,15 @@ input=(
     $'abra schw\"abra\\ ka\"dab\"ra\" foo\"    \"bar'
     $'abra schw\"abra ka\"dab\"ra\" f\\oo\"    \"bar'
     $'abra schw\\\"abra ka\"dab\"ra\" foo\"    \"bar'
+    $'\"\" word1 word2'
+    $'word1 \"\" word2'
+    $'word1 word2 \"\" word3'
+    $'word1 word2 \"\"'
+    $'word1 \"\"word2'
+    $'word1 \"\"word2'
+    $'w\"  \"\"  \"ord'
+    $'w\"o \"\" r\"d'
+    $'word \"\"'
     # Simulate EOF with empty input
     ""
 )

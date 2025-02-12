@@ -46,7 +46,7 @@ void print_list_of_words_reqursive_call(const word_item *item)
     if (!item)
         return;
     print_list_of_words_reqursive_call(item->next);
-    printf("[%s]\n", item->word);
+    printf("[%s]\n", (item->word) ? (item->word) : "");
 }
 
 void print_list_of_words(const word_item *words_list)
@@ -88,10 +88,8 @@ char *my_realloc(char *old_short_str, int new_size)
 void add_character_to_word(string *str)
 {
     str->word_ended = false;
-    /* if we have empty list of words or finished last word (if the last word
-    isn't finished, it's still forming in the `tmp_wrd` array and thus
-    `str->words_list->word` is NULL), add new item to the list of words */
-    if ((!str->words_list) || (str->words_list->word))
+    /* if we haven't started to write the `tmp_wrd` yet */
+    if (!str->tmp_wrd.idx)
         add_empty_item_to_list_of_words(str);
     if (str->tmp_wrd.idx == str->tmp_wrd.size-1) {
         int new_size = str->tmp_wrd.size * 2;
@@ -197,12 +195,16 @@ void process_character_escape_symbol(string *str)
         str->char_escaping = true;
 }
 
+void possible_case_of_adding_empty_word(string *str);
+
 void process_quotation_mark_character(string *str)
 {
     if (str->char_escaping) {
         process_escaped_character(str);
-    } else
+    } else {
         toggle_include_spaces(str);
+        possible_case_of_adding_empty_word(str);
+    }
 }
 
 void process_character(string *str)
@@ -230,6 +232,20 @@ void process_character(string *str)
     }
     else
         print_list_of_words(words_list);
+}
+
+void possible_case_of_adding_empty_word(string *str)
+{
+    if ((!str->words_list) || (str->word_ended)) {
+        str->c = getchar();
+        if (str->c == '"') {
+            toggle_include_spaces(str);
+            str->c = getchar();
+            if (str->c == ' ' || str->c == '\t' || str->c == '\n')
+                add_empty_item_to_list_of_words(str);
+        }
+        process_character(str);
+    }
 }
 
 int main()
