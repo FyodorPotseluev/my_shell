@@ -6,10 +6,10 @@ expected=()
 input+=( $'abra schwabra kadabra\n' )
 expected+=( $'[abra]\n[schwabra]\n[kadabra]' );
 
-input+=( $'abra   \n' )
+input+=( "abra   " )
 expected+=( $'[abra]' );
 
-input+=( $'     abra\t\tschwabra \t \tkadabra\n' )
+input+=( $'     abra\t\tschwabra \t \tkadabra' )
 expected+=( $'[abra]\n[schwabra]\n[kadabra]' )
 
 input+=( $'abra \"schwabra kadabra\" \"foo    bar\"\n' )
@@ -90,6 +90,12 @@ expected+=( $'Error: unmatched quotes' )
 input+=( $'abraschwabrakadabra\n' )
 expected+=( "[abraschwabrakadabra]" )
 
+input+=( $'w\"  \"\"  \"ord' )
+expected+=( $'[w    ord]' )
+
+input+=( $'w\"o \"\" r\"d' )
+expected+=( $'[wo  rd]' )
+
 input+=( "    " )
 expected+=( "" )
 
@@ -115,6 +121,9 @@ expected+=( "" )
 i=0
 arr_len=${#input[@]}
 for idx in "${!input[@]}"; do
+# here-string `<<<` automatically appends EOF after sending `${input[idx]}`
+# to `./my_shell.`
+
 # sed -e 's/> //g' -e 's/\^D$//'
 #   sed - pars and transform text
 #   's/> //g'
