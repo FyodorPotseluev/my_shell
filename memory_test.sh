@@ -29,6 +29,18 @@ input=(
     $'\"\"\"\"'
     $'\"\" \t\"\"'
     $' \"\" \t\"\" '
+    $'\\\"abra\\\" \\\"schwabra\\\" \\\"kadabra\\\"'
+    $'\\\\abra\\\\ \\\\schwabra\\\\ \\\\kadabra\\\\'
+    $'abra \\\\s\\\"c\\\\h\\\"w\\\\a\\\"b\\\\r\\\"a\\\\ kadabra'
+    $'abra \\\\schw\"abra\\\\\\\"ka\"dab\"ra\\\"\" foo\"    \"bar'
+    $'abra \\\\schw\"a\\\\b\\\\ra\\\"k\\\"a\"dab\"ra\\\"\" foo\"    \"bar'
+    $'abra \\\\schw\"a\\\\b\\\"ra\\\\k\\\"a\"dab\"ra\\\"\" foo\"    \"bar'
+    $'word \"'
+    $'abra schw\"abraka\"dab\"ra\"\\ foo\"    \"bar'
+    $'abra schw\"abra ka\"dab\"r\\a\" foo\"    \"bar'
+    $'abra schw\"abra\\ ka\"dab\"ra\" foo\"    \"bar'
+    $'abra schw\"abra ka\"dab\"ra\" f\\oo\"    \"bar'
+    $'abra schw\\\"abra ka\"dab\"ra\" foo\"    \"bar'
     # Simulate EOF with empty input
     ""
 )

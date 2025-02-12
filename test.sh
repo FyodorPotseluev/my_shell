@@ -18,76 +18,46 @@ expected+=( $'[abra]\n[schwabra kadabra]\n[foo    bar]' )
 input+=( $'abra schw\"abra ka\"dab\"ra\" foo\"    \"bar\n' )
 expected+=( $'[abra]\n[schwabra kadabra]\n[foo    bar]' )
 
-input+=( $'\\\"abra\\\" \\\"schwabra\\\" \\\"kadabra\\\"\n' )
+input+=( $'\\\"abra\\\" \\\"schwabra\\\" \\\"kadabra\\\"' )
 expected+=( $'[\"abra\"]\n[\"schwabra\"]\n[\"kadabra\"]' );
 
-input+=( $'\\\\abra\\\\ \\\\schwabra\\\\ \\\\kadabra\\\\\n' )
+input+=( $'\\\\abra\\\\ \\\\schwabra\\\\ \\\\kadabra\\\\' )
 expected+=( $'[\\abra\\]\n[\\schwabra\\]\n[\\kadabra\\]' );
 
-input+=( $'abra \\\\s\\\"c\\\\h\\\"w\\\\a\\\"b\\\\r\\\"a\\\\ kadabra\n' )
+input+=( $'abra \\\\s\\\"c\\\\h\\\"w\\\\a\\\"b\\\\r\\\"a\\\\ kadabra' )
 expected+=( $'[abra]\n[\\s\"c\\h\"w\\a\"b\\r\"a\\]\n[kadabra]' );
 
-input+=( $'abra \\\\schw\"abra\\\\\\\"ka\"dab\"ra\\\"\" foo\"    \"bar\n' )
+input+=( $'abra \\\\schw\"abra\\\\\\\"ka\"dab\"ra\\\"\" foo\"    \"bar' )
 expected+=( $'[abra]\n[\\schwabra\\\"kadabra\"]\n[foo    bar]' )
 
-input+=( $'abra \\\\schw\"a\\\\b\\\\ra\\\"k\\\"a\"dab\"ra\\\"\" foo\"    \"bar\n' )
+input+=( $'abra \\\\schw\"a\\\\b\\\\ra\\\"k\\\"a\"dab\"ra\\\"\" foo\"    \"bar' )
 expected+=( $'[abra]\n[\\schwa\\b\\ra\"k\"adabra\"]\n[foo    bar]' )
 
-input+=( $'abra \\\\schw\"a\\\\b\\\"ra\\\\k\\\"a\"dab\"ra\\\"\" foo\"    \"bar\n' )
+input+=( $'abra \\\\schw\"a\\\\b\\\"ra\\\\k\\\"a\"dab\"ra\\\"\" foo\"    \"bar' )
 expected+=( $'[abra]\n[\\schwa\\b\"ra\\k\"adabra\"]\n[foo    bar]' )
 
-input+=( $'\"\" word1 word2\n' )
-expected+=( $'[]\n[word1]\n[word2]' )
-
-input+=( $'word1 \"\" word2\n' )
-expected+=( $'[word1]\n[]\n[word2]' )
-
-input+=( $'word1 word2 \"\" word3\n' )
-expected+=( $'[word1]\n[word2]\n[]\n[word3]' )
-
-input+=( $'word1 word2 \"\"\n' )
-expected+=( $'[word1]\n[word2]\n[]' )
-
-input+=( $'word1\"\" word2\n' )
-expected+=( $'[word1]\n[word2]' )
-
-input+=( $'word1 \"\"word2\n' )
-expected+=( $'[word1]\n[word2]' )
-
-input+=( $'word1 \"\"word2\n' )
-expected+=( $'[word1]\n[word2]' )
-
-input+=( $'w\"  \"\"  \"ord\n' )
-expected+=( $'[w    ord]' )
-
-input+=( $'w\"o \"\" r\"d\n' )
-expected+=( $'[wo  rd]' )
-
-input+=( $'word \"\"\n' )
-expected+=( $'[word]\n[]' )
-
-input+=( $'word \"\n' )
+input+=( $'abra schwabra kadabra\"  foo bar' )
 expected+=( $'Error: unmatched quotes' )
 
-input+=( $'abra schw\"abraka\"dab\"ra\"\\ foo\"    \"bar\n' )
-expected+=( $'Error: only the characters `\"` and `\\` can be escaped' )
-
-input+=( $'abra schw\"abra ka\"dab\"r\\a\" foo\"    \"bar\n' )
-expected+=( $'Error: only the characters `\"` and `\\` can be escaped' )
-
-input+=( $'abra schw\"abra\\ ka\"dab\"ra\" foo\"    \"bar\n' )
-expected+=( $'Error: only the characters `\"` and `\\` can be escaped' )
-
-input+=( $'abra schw\"abra ka\"dab\"ra\" f\\oo\"    \"bar\n' )
-expected+=( $'Error: only the characters `\"` and `\\` can be escaped' )
-
-input+=( $'abra schw\\\"abra ka\"dab\"ra\" foo\"    \"bar\n' )
+input+=( $'word \"' )
 expected+=( $'Error: unmatched quotes' )
 
-input+=( $'abra schwabra kadabra\"  foo bar\n' )
+input+=( $'abra schw\"abraka\"dab\"ra\"\\ foo\"    \"bar' )
+expected+=( $'Error: only the characters `\"` and `\\` can be escaped' )
+
+input+=( $'abra schw\"abra ka\"dab\"r\\a\" foo\"    \"bar' )
+expected+=( $'Error: only the characters `\"` and `\\` can be escaped' )
+
+input+=( $'abra schw\"abra\\ ka\"dab\"ra\" foo\"    \"bar' )
+expected+=( $'Error: only the characters `\"` and `\\` can be escaped' )
+
+input+=( $'abra schw\"abra ka\"dab\"ra\" f\\oo\"    \"bar' )
+expected+=( $'Error: only the characters `\"` and `\\` can be escaped' )
+
+input+=( $'abra schw\\\"abra ka\"dab\"ra\" foo\"    \"bar' )
 expected+=( $'Error: unmatched quotes' )
 
-input+=( $'abraschwabrakadabra\n' )
+input+=( "abraschwabrakadabra" )
 expected+=( "[abraschwabrakadabra]" )
 
 input+=( $'w\"  \"\"  \"ord' )

@@ -9,14 +9,9 @@ enum consts {
     init_tmp_wrd_arr_size = 16
 };
 
-typedef struct tag_struct_input {
-    char c;
-    bool record_space_symbols;
-    bool end_of_word;
-    bool character_escaping;
-    bool stop_reading_curr_str;
-    int curr_idx;
-} struct_input;
+typedef enum tag_error_code {
+    ok, incorrect_char_escaping
+} error_code;
 
 typedef struct tag_word_item {
     char *word;
@@ -30,8 +25,9 @@ typedef struct tag_dynamic_char_arr {
 } dynamic_char_arr;
 
 typedef struct tag_string {
-    bool word_ended, str_ended, include_spaces;
+    bool word_ended, str_ended, include_spaces, char_escaping;
     int c;
+    error_code err_code;
     word_item *words_list;
     dynamic_char_arr tmp_wrd;
 } string;
@@ -117,18 +113,38 @@ void process_end_of_word(string *str)
 
 void reset_str_variables(string *str)
 {
-    str->include_spaces = false;
     str->word_ended = false;
     str->str_ended = false;
+    str->include_spaces = false;
+    str->char_escaping = false;
+    str->err_code = ok;
     str->tmp_wrd.idx = 0;
+}
+
+bool report_if_error(string *str)
+{
+    bool error = true;
+    if (str->err_code == incorrect_char_escaping)
+        printf("Error: only the characters `\"` and `\\` can be escaped\n");
+    else
+    /* check this error condition before last */
+    /* the `stdin_cleanup` function, which could be called if previous errors
+    were detected, could break the balance of quote signs */
+    if (str->include_spaces)
+        printf("Error: unmatched quotes\n");
+    else
+    /* check this error condition last */
+    if (str->err_code == ok)
+        error = false;
+    return error;
 }
 
 void process_end_of_string(string *str)
 {
-    if (str->include_spaces)
-        printf("Error: unmatched quotes\n");
-    else
-        execute_command(str->words_list);
+    bool error = report_if_error(str);
+    if (error)
+        return;
+    execute_command(str->words_list);
     free_list_of_words(str->words_list);
     str->words_list = NULL;
     reset_str_variables(str);
@@ -151,21 +167,65 @@ void process_space_character(string *str)
         complete_word(str);
 }
 
+void stdin_cleanup()
+{
+    int c;
+    while ((c=getchar() != '\n') && (c != EOF))
+        ;
+}
+
+void check_incorrect_character_escaping(string *str)
+{
+    if (str->char_escaping) {
+        str->err_code = incorrect_char_escaping;
+        str->str_ended = true;
+        stdin_cleanup();
+    }
+}
+
+void process_escaped_character(string *str)
+{
+    add_character_to_word(str);
+    str->char_escaping = false;
+}
+
+void process_character_escape_symbol(string *str)
+{
+    if (str->char_escaping) {
+        process_escaped_character(str);
+    } else
+        str->char_escaping = true;
+}
+
+void process_quotation_mark_character(string *str)
+{
+    if (str->char_escaping) {
+        process_escaped_character(str);
+    } else
+        toggle_include_spaces(str);
+}
+
 void process_character(string *str)
 {
     switch (str->c) {
         case ('\t'):
         case (' '):
+            check_incorrect_character_escaping(str);
             process_space_character(str);
             break;
         case ('\n'):
+            check_incorrect_character_escaping(str);
             complete_word(str);
             str->str_ended = true;
             break;
+        case ('\\'):
+            process_character_escape_symbol(str);
+            break;
         case ('"'):
-            toggle_include_spaces(str);
+            process_quotation_mark_character(str);
             break;
         default:
+            check_incorrect_character_escaping(str);
             add_character_to_word(str);
     }
     else
@@ -174,8 +234,10 @@ void process_character(string *str)
 
 int main()
 {
-    string str =
-        { false, false, false, 0, NULL, { NULL, 0, init_tmp_wrd_arr_size } };
+    string str = {
+        false, false, false, false, 0, ok, NULL,
+        { NULL, 0, init_tmp_wrd_arr_size }
+    };
     str.tmp_wrd.arr = malloc(str.tmp_wrd.size * sizeof(char));
     printf("> ");
     while ((str.c = getchar()) != EOF) {
