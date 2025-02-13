@@ -230,8 +230,6 @@ void process_character(string *str)
             check_incorrect_character_escaping(str);
             add_character_to_word(str);
     }
-    else
-        print_list_of_words(words_list);
 }
 
 void possible_case_of_adding_empty_word(string *str)
