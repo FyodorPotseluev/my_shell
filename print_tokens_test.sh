@@ -111,6 +111,9 @@ expected+=( $'[wo  rd]' )
 input+=( $'word \"\"' )
 expected+=( $'[word]\n[]' )
 
+input+=( $'a \"It is a super long string, you see, I could actually overcome the bug where I unfortunately missed the issue that my tmp_wrd_array size was doubled only once, instead of being doubled every time the index value equals array size - 1. So lets see if everything is fine now.\" b' )
+expected+=( $'[a]\n[It is a super long string, you see, I could actually overcome the bug where I unfortunately missed the issue that my tmp_wrd_array size was doubled only once, instead of being doubled every time the index value equals array size - 1. So lets see if everything is fine now.]\n[b]' )
+
 # Simulate EOF with empty input
 input+=( "" )
 expected+=( "" )

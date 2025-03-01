@@ -1,16 +1,24 @@
 /* my_shell.c */
 
+#if !defined(EXEC_MODE) && !defined(PRINT_TOKENS_MODE)
+#error Please define either EXEC_MODE or PRINT_TOKENS_MODE
+#endif
+
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 enum consts {
-    init_tmp_wrd_arr_size = 16
+    init_tmp_wrd_arr_len    = 16,
+    init_cmd_line_arr_len   = 16
 };
 
 typedef enum tag_error_code {
-    ok, incorrect_char_escaping
+    no_error, incorrect_char_escaping
 } error_code;
 
 typedef struct tag_word_item {
@@ -18,46 +26,137 @@ typedef struct tag_word_item {
     struct tag_word_item *next;
 } word_item;
 
-typedef struct tag_dynamic_char_arr {
+typedef struct tag_curr_str_words_list {
+    word_item *first;
+    word_item *last;
+    int len;
+} curr_str_words_list;
+
+typedef struct tag_curr_word_dynamic_char_arr {
     char *arr;
     int idx;
-    int size;
-} dynamic_char_arr;
+    int arr_len;
+} curr_word_dynamic_char_arr;
+
+typedef struct tag_execvp_cmd_line {
+    char **arr;
+    int arr_len;
+} execvp_cmd_line;
 
 typedef struct tag_string {
     bool word_ended, str_ended, include_spaces, char_escaping;
     int c;
     error_code err_code;
-    word_item *words_list;
-    dynamic_char_arr tmp_wrd;
+    /* contains the array in which the current word is formed */
+    curr_word_dynamic_char_arr tmp_wrd;
+    /* contains the linked list in wich the current string is stored */
+    curr_str_words_list words_list;
+    /* contains the array designated for the `execvp` call */
+    execvp_cmd_line cmd_line;
 } string;
 
-void free_list_of_words(word_item *item)
+void error_handling(
+    int res, const char *file_name, int line_num, const char *cmd
+)
 {
-    if (!item)
+    if (res == -1) {
+        fprintf(stderr, "%s, %d, %s: ", file_name, line_num, cmd);
+        perror("");
+        fflush(stderr);
+    }
+}
+
+void free_list_of_words(curr_str_words_list *link_list)
+{
+    word_item *p = link_list->first;
+    while (p) {
+        word_item *tmp = p;
+        p = p->next;
+        free(tmp->word);
+        free(tmp);
+    }
+    link_list->first = NULL;
+    link_list->last = NULL;
+    link_list->len = 1;
+}
+
+#if defined(PRINT_TOKENS_MODE)
+void print_list_of_words(const curr_str_words_list *words_list)
+{
+    word_item *p = words_list->first;
+    while (p) {
+        printf("[%s]\n", p->word ? p->word : "");
+        p = p->next;
+    }
+}
+#elif defined(EXEC_MODE)
+void increase_cmd_line_array_length(string *str)
+{
+    free(str->cmd_line.arr);
+    while (str->cmd_line.arr_len < str->words_list.len)
+        str->cmd_line.arr_len *= 2;
+    str->cmd_line.arr = malloc(str->cmd_line.arr_len * sizeof(char*));
+}
+
+void transform_words_list_into_cmd_line_arr(string *str)
+{
+    word_item *p = str->words_list.first;
+    int i = 0;
+    if (str->cmd_line.arr_len < str->words_list.len)
+        increase_cmd_line_array_length(str);
+    for (;; p=p->next, i++) {
+        if (!p) {
+            str->cmd_line.arr[i] = NULL;
+            break;
+        }
+        str->cmd_line.arr[i] = p->word;
+    }
+}
+
+void handle_change_dir_command(const string *str)
+{
+    if (!str->cmd_line.arr[1])
+        printf("Change dir to HOME. Will implement the feature later\n");
+    else
+    if (!str->cmd_line.arr[2]) {
+        int res = chdir(str->cmd_line.arr[1]);
+        error_handling(res, __FILE__, __LINE__, "chdir");
+    } else
+        printf("my_shell: cd: too many arguments\n");
+}
+
+bool change_dir_command(const string *str)
+{
+    return (0 == strcmp("cd", str->cmd_line.arr[0])) ? true : false;
+}
+#endif
+
+void execute_command(string *str)
+{
+#if defined(PRINT_TOKENS_MODE)
+    print_list_of_words(&str->words_list);
+#elif defined(EXEC_MODE)
+    int pid, res;
+    if (!str->words_list.first)
         return;
-    free_list_of_words(item->next);
-    free(item->word);
-    free(item);
-}
-
-void print_list_of_words_reqursive_call(const word_item *item)
-{
-    if (!item)
+    transform_words_list_into_cmd_line_arr(str);
+    if (change_dir_command(str)) {
+        handle_change_dir_command(str);
         return;
-    print_list_of_words_reqursive_call(item->next);
-    printf("[%s]\n", (item->word) ? (item->word) : "");
-}
-
-void print_list_of_words(const word_item *words_list)
-{
-    if (words_list)
-        print_list_of_words_reqursive_call(words_list);
-}
-
-void execute_command(const word_item *words_list)
-{
-    print_list_of_words(words_list);
+    }
+    fflush(stderr);
+    pid = fork();
+    error_handling(pid, __FILE__, __LINE__, "fork");
+    if (pid == 0) {
+        execvp(str->cmd_line.arr[0], str->cmd_line.arr);
+        fprintf(stderr, "%s, %d, %s: ", __FILE__, __LINE__, "execvp");
+        perror("");
+        fflush(stderr);
+        _exit(1);
+    }
+    res = wait(NULL);
+    error_handling(res, __FILE__, __LINE__, "wait");
+#endif
 }
 
 void toggle_include_spaces(string *str)
@@ -68,21 +167,27 @@ void toggle_include_spaces(string *str)
         str->include_spaces = true;
 }
 
-void add_empty_item_to_list_of_words(string *str)
+void add_empty_item_to_list_of_words(curr_str_words_list *list)
 {
-    word_item *tmp = malloc(sizeof(word_item));
-    tmp->word = NULL;
-    tmp->next = str->words_list;
-    str->words_list = tmp;
+    if (!list->first) {
+        list->first = malloc(sizeof(word_item));
+        list->last = list->first;
+    } else {
+        list->last->next = malloc(sizeof(word_item));
+        list->last = list->last->next;
+    }
+    list->last->word = NULL;
+    list->last->next = NULL;
+    list->len += 1;
 }
 
-char *my_realloc(char *old_short_str, int new_size)
+void double_tmp_wrd_arr(curr_word_dynamic_char_arr *tmp_wrd)
 {
-    int old_size = new_size / 2;
-    char *new_long_str = malloc(new_size * sizeof(char));
-    memcpy(new_long_str, old_short_str, old_size);
-    free(old_short_str);
-    return new_long_str;
+    char *doubled_arr = malloc(tmp_wrd->arr_len*2 * sizeof(char));
+    memcpy(doubled_arr, tmp_wrd->arr, tmp_wrd->arr_len);
+    free(tmp_wrd->arr);
+    tmp_wrd->arr = doubled_arr;
+    tmp_wrd->arr_len *= 2;
 }
 
 void add_character_to_word(string *str)
@@ -90,11 +195,9 @@ void add_character_to_word(string *str)
     str->word_ended = false;
     /* if we haven't started to write the `tmp_wrd` yet */
     if (!str->tmp_wrd.idx)
-        add_empty_item_to_list_of_words(str);
-    if (str->tmp_wrd.idx == str->tmp_wrd.size-1) {
-        int new_size = str->tmp_wrd.size * 2;
-        str->tmp_wrd.arr = my_realloc(str->tmp_wrd.arr, new_size);
-    }
+        add_empty_item_to_list_of_words(&str->words_list);
+    if (str->tmp_wrd.idx == str->tmp_wrd.arr_len-1)
+        double_tmp_wrd_arr(&str->tmp_wrd);
     str->tmp_wrd.arr[str->tmp_wrd.idx] = str->c;
     (str->tmp_wrd.idx)++;
 }
@@ -102,10 +205,8 @@ void add_character_to_word(string *str)
 void process_end_of_word(string *str)
 {
     str->tmp_wrd.arr[str->tmp_wrd.idx] = '\0';
-    if (str->words_list) {
-        str->words_list->word = malloc((str->tmp_wrd.idx + 1) * sizeof(char));
-        strcpy(str->words_list->word, str->tmp_wrd.arr);
-    }
+    str->words_list.last->word = malloc((str->tmp_wrd.idx + 1) * sizeof(char));
+    strcpy(str->words_list.last->word, str->tmp_wrd.arr);
     str->tmp_wrd.idx = 0;
 }
 
@@ -115,11 +216,12 @@ void reset_str_variables(string *str)
     str->str_ended = false;
     str->include_spaces = false;
     str->char_escaping = false;
-    str->err_code = ok;
+    str->err_code = no_error;
+    str->words_list.len = 1;
     str->tmp_wrd.idx = 0;
 }
 
-bool report_if_error(string *str)
+bool report_if_error(const string *str)
 {
     bool error = true;
     if (str->err_code == incorrect_char_escaping)
@@ -132,7 +234,7 @@ bool report_if_error(string *str)
         printf("Error: unmatched quotes\n");
     else
     /* check this error condition last */
-    if (str->err_code == ok)
+    if (str->err_code == no_error)
         error = false;
     return error;
 }
@@ -140,18 +242,16 @@ bool report_if_error(string *str)
 void process_end_of_string(string *str)
 {
     bool error = report_if_error(str);
-    if (error)
-        return;
-    execute_command(str->words_list);
-    free_list_of_words(str->words_list);
-    str->words_list = NULL;
+    if (!error)
+        execute_command(str);
+    free_list_of_words(&str->words_list);
     reset_str_variables(str);
     printf("> ");
 }
 
 void complete_word(string *str)
 {
-    if (!str->word_ended && str->words_list) {
+    if (!str->word_ended && str->words_list.last) {
         process_end_of_word(str);
         str->word_ended = true;
     }
@@ -234,13 +334,13 @@ void process_character(string *str)
 
 void possible_case_of_adding_empty_word(string *str)
 {
-    if ((!str->words_list) || (str->word_ended)) {
+    if ((!str->words_list.last) || (str->word_ended)) {
         str->c = getchar();
         if (str->c == '"') {
             toggle_include_spaces(str);
             str->c = getchar();
             if (str->c == ' ' || str->c == '\t' || str->c == '\n')
-                add_empty_item_to_list_of_words(str);
+                add_empty_item_to_list_of_words(&str->words_list);
         }
         process_character(str);
     }
@@ -249,19 +349,23 @@ void possible_case_of_adding_empty_word(string *str)
 int main()
 {
     string str = {
-        false, false, false, false, 0, ok, NULL,
-        { NULL, 0, init_tmp_wrd_arr_size }
+        false, false, false, false, 0, no_error,
+        { NULL, 0, init_tmp_wrd_arr_len },
+        { NULL, NULL, 1 },
+        { NULL, init_cmd_line_arr_len }
     };
-    str.tmp_wrd.arr = malloc(str.tmp_wrd.size * sizeof(char));
+    str.tmp_wrd.arr = malloc(str.tmp_wrd.arr_len * sizeof(char));
+    str.cmd_line.arr = malloc(str.cmd_line.arr_len * sizeof(char*));
     printf("> ");
     while ((str.c = getchar()) != EOF) {
         process_character(&str);
         if (str.str_ended)
             process_end_of_string(&str);
     }
-    free_list_of_words(str.words_list);
-    str.words_list = NULL;
+    free_list_of_words(&str.words_list);
     free(str.tmp_wrd.arr);
+    str.tmp_wrd.arr = NULL;
+    free(str.cmd_line.arr);
     printf("^D\n");
     return 0;
 }

@@ -50,6 +50,7 @@ input=(
     $'w\"  \"\"  \"ord'
     $'w\"o \"\" r\"d'
     $'word \"\"'
+    $'a \"It is a super long string, you see, I could actually overcome the bug where I unfortunately missed the issue that my tmp_wrd_array size was doubled only once, instead of being doubled every time the index value equals array size - 1. So lets see if everything is fine now.\" b'
     # Simulate EOF with empty input
     ""
 )
