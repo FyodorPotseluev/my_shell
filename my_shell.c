@@ -12,6 +12,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+extern char *environ;
+
 enum consts {
     init_tmp_wrd_arr_len    = 16,
     init_cmd_line_arr_len   = 16
@@ -113,10 +115,23 @@ void transform_words_list_into_cmd_line_arr(string *str)
     }
 }
 
+void change_to_home_directory()
+{
+    int res;
+    const char *home_dir = getenv("HOME");
+    if (!home_dir) {
+        fprintf(stderr, "%s, %d, %s: ", __FILE__, __LINE__, "getenv");
+        perror("");
+        return;
+    }
+    res = chdir(home_dir);
+    error_handling(res, __FILE__, __LINE__, "chdir");
+}
+
 void handle_change_dir_command(const string *str)
 {
     if (!str->cmd_line.arr[1])
-        printf("Change dir to HOME. Will implement the feature later\n");
+        change_to_home_directory();
     else
     if (!str->cmd_line.arr[2]) {
         int res = chdir(str->cmd_line.arr[1]);
