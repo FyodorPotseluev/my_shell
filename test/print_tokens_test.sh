@@ -447,7 +447,7 @@ for idx in "${!input[@]}"; do
 #   's/\^D$//'
 #   \^D - matches `^D` (EOF) character (every `input` element ends with EOF)
 #   $   -  matches the end of the line, the character must be at the end of line
-    actual=$(./my_shell <<< "${input[idx]}" 2>&1 | sed -e 's/> //g' -e 's/\^D$//')
+    actual=$(./build/bin/my_shell <<< "${input[idx]}" 2>&1 | sed -e 's/> //g' -e 's/\^D$//')
     if [[ "${expected[idx]}" != "$actual" ]]; then
         printf -- '--------------------------------------------------------------------------------\n'
         printf '\nTEST\n%b\nFAILED: expected: \n%b\ngot: \n%b\n\n' \

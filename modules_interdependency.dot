@@ -1,0 +1,22 @@
+digraph codeviz {
+    splines=true
+    sep="+15,15"
+    overlap=scalexy
+
+    node [shape=Mrecord, fontsize=12]
+
+    node [fillcolor="#ccccff", style=filled] "./include/cmd_execution.h" [label = "./include/cmd_execution.h"]
+    node [fillcolor="#ccccff", style=filled] "./include/constants.h"     [label = "./include/constants.h"]
+    node [fillcolor="#ccccff", style=filled] "./include/str_parsing.h"   [label = "./include/str_parsing.h"]
+    node [fillcolor="#ff9999", style=filled] "./src/cmd_execution.c"     [label = "./src/cmd_execution.c"]
+    node [fillcolor="#ff9999", style=filled] "./src/main.c"              [label = "./src/main.c"]
+    node [fillcolor="#ff9999", style=filled] "./src/str_parsing.c"       [label = "./src/str_parsing.c"]
+
+    "./include/cmd_execution.h" -> "./include/constants.h"
+    "./include/str_parsing.h"   -> "./include/constants.h"
+    "./src/cmd_execution.c"     -> "./include/cmd_execution.h"
+    "./src/main.c"              -> "./include/str_parsing.h"
+    "./src/main.c"              -> "./include/constants.h"
+    "./src/str_parsing.c"       -> "./include/cmd_execution.h"
+    "./src/str_parsing.c"       -> "./include/str_parsing.h"
+}

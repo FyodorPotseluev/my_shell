@@ -172,7 +172,7 @@ for idx in "${!input[@]}"; do
 #   's/\^D$//'
 #   \^D - matches `^D` (EOF) character (every `input` element ends with EOF)
 #   $   -  matches the end of the line, the character must be at the end of line
-    output=$( $valgrind_command ./my_shell <<< "${input[idx]}" 2>&1 | sed -e 's/> //g' -e 's/\^D$//' )
+    output=$( $valgrind_command ./build/bin/my_shell <<< "${input[idx]}" 2>&1 | sed -e 's/> //g' -e 's/\^D$//' )
     if [ $? -eq 42 ]; then
         printf '%s\n' \
             '------------------------------------------------------------------------------'
