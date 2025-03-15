@@ -16,6 +16,9 @@ typedef enum tag_error_code {
     no_error,
     incorrect_char_escaping,
     background_operator_not_in_the_end_of_str,
+    separator_right_after_input_or_output_redirection,
+    second_simple_word_right_after_input_or_output_redirecton,
+    input_or_output_separator_used_in_line_twice,
     not_implemented_feature
 } error_code;
 

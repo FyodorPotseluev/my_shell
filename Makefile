@@ -38,6 +38,7 @@ ifeq ($(D),PRINT_TOKENS_MODE)
     CFLAGS += -D PRINT_TOKENS_MODE
 else
     CFLAGS += -D EXEC_MODE
+    D = EXEC_MODE
 endif
 
 all: $(EXECUTABLE)
@@ -51,7 +52,10 @@ help:
 	@echo " > run - execute the project"
 	@echo " > print_tokens_test"
 	@echo "     - run the project's integration test (correct string splitting into tokens)"
+	@echo " > session_test"
+	@echo "     - run the project's integration test (correct `my_shell` session)"
 	@echo " > memcheck_print_tokens_test"
+	@echo " > memcheck_session_test"
 	@echo "     - memory check the print_tokens_test"
 	@echo " > debug - begin a gdb process for the executable"
 	@echo " > leak_search - run the project under valgrind"
@@ -85,6 +89,12 @@ run: $(EXECUTABLE)
 
 print_tokens_test:
 	$(TEST_DIR)/print_tokens_test.sh
+
+session_test:
+	$(TEST_DIR)/session_test.sh
+
+memcheck_session_test:
+	$(TEST_DIR)/memcheck_session_test.sh
 
 memcheck_print_tokens_test:
 	$(TEST_DIR)/memcheck_print_tokens_test.sh
