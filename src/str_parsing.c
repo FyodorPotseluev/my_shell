@@ -2,11 +2,13 @@
 
 #include "cmd_execution.h"
 #include "str_parsing.h"
+#include "zombie_handling.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define ESC_ERR "my_shell: Error: only the characters `\"` and `\\` can be escaped\n"
+#define ESC_ERR \
+    "my_shell: Error: only the characters `\"` and `\\` can be escaped\n"
 
 void free_list_of_words(curr_str_words_list *link_list)
 {
@@ -106,7 +108,7 @@ static bool report_if_error(const string *str)
 static void stdin_cleanup()
 {
     int c;
-    while ((c=getchar() != '\n') && (c != EOF))
+    while ((c=getchar_signal_protected() != '\n') && (c != EOF))
         ;
 }
 
@@ -117,7 +119,6 @@ void process_end_of_string(string *str)
         execute_command(str);
     free_list_of_words(&str->words_list);
     reset_str_variables(str);
-    cleanup_background_zombies();
     printf("> ");
 }
 
@@ -230,7 +231,7 @@ static void process_possible_double_separator(string *str)
         /* complete the previous word */
         complete_word(str);
         add_character_to_word(str);
-        str->c = getchar();
+        str->c = getchar_signal_protected();
         if (str->c == chr) {
             add_character_to_word(str);
             add_separator(str, get_double_separator_val(str->c));
@@ -243,10 +244,7 @@ static void process_possible_double_separator(string *str)
 
 static bool incorrect_character_escaping(const string *str)
 {
-    if ((str->char_escaping) && (str->c != '\\') && (str->c != '"'))
-        return true;
-    else
-        return false;
+    return ((str->char_escaping) && (str->c != '\\') && (str->c != '"'));
 }
 
 static void handle_incorrect_character_escaping(string *str)
@@ -296,10 +294,10 @@ void process_character(string *str)
 static void possible_case_of_adding_empty_word(string *str)
 {
     if ((!str->words_list.last) || (str->word_ended)) {
-        str->c = getchar();
+        str->c = getchar_signal_protected();
         if (str->c == '"') {
             toggle_quotation(str);
-            str->c = getchar();
+            str->c = getchar_signal_protected();
             if (str->c == ' ' || str->c == '\t' || str->c == '\n')
                 add_empty_item_to_list_of_words(&str->words_list);
         }

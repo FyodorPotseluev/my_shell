@@ -46,14 +46,14 @@ all: $(EXECUTABLE)
 # Display useful goals in this Makefile
 help:
 	@echo "Try one of the following make goals:"
-	@echo " > - (no goals) compile using sanitizers. Execute programs;"
+	@echo " > (no goals) compile using sanitizers. Execute programs;"
 	@echo " > D=PRINT_TOKENS_MODE - compile using sanitizers. Print all the tokens;"
 	@echo " > readme - project's documentation"
 	@echo " > run - execute the project"
 	@echo " > print_tokens_test"
 	@echo "     - run the project's integration test (correct string splitting into tokens)"
 	@echo " > session_test"
-	@echo "     - run the project's integration test (correct `my_shell` session)"
+	@echo "     - run the project's integration test (correct \`my_shell\` session)"
 	@echo " > memcheck_print_tokens_test"
 	@echo " > memcheck_session_test"
 	@echo "     - memory check the print_tokens_test"

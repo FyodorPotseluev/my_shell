@@ -8,8 +8,6 @@
 
 bool words_list_is_empty(const string *str);
 
-void cleanup_background_zombies();
-
 void execute_command(string *str);
 
 #endif

@@ -5,6 +5,8 @@
 #endif
 
 #include "cmd_execution.h"
+#include "error_handling.h"
+#include "zombie_handling.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -31,21 +33,7 @@ typedef struct tag_command_line_status {
 
 bool words_list_is_empty(const string *str)
 {
-    return (!str->words_list.first) ? true : false;
-}
-
-static bool there_are_possible_zombies_left(int res)
-{
-    /* if we get a valid pid */
-    return ((res != 0) && (res != -1)) ? true : false;
-}
-
-void cleanup_background_zombies()
-{
-    int res;
-    do {
-        res = wait4(-1, NULL, WNOHANG, NULL);
-    } while (there_are_possible_zombies_left(res));
+    return (!str->words_list.first);
 }
 
 #if defined(PRINT_TOKENS_MODE)
@@ -99,17 +87,6 @@ static void print_list_of_words(const curr_str_words_list *words_list)
     }
 }
 #elif defined(EXEC_MODE)
-static void error_handling(
-    int res, const char *file_name, int line_num, const char *cmd
-)
-{
-    if (res == -1) {
-        fprintf(stderr, "%s, %d, %s: ", file_name, line_num, cmd);
-        perror("");
-        fflush(stderr);
-    }
-}
-
 static void increase_cmd_line_array_length(string *str)
 {
     free(str->cmd_line.arr);
@@ -123,6 +100,7 @@ static bool separator_right_after_io_redirecton(
 )
 {
     bool the_word_is_separator = (curr_word->separator_val != none);
+
     bool io_redirection_waiting_for_file =
         (cmdline_status->input.waiting_for_file ||
         cmdline_status->output_overwrite.waiting_for_file ||
@@ -139,10 +117,12 @@ static bool second_simple_word_right_after_io_redirecton(
 )
 {
     bool simple_word = (curr_word->separator_val == none);
+
     bool at_least_one_io_redirection =
         (cmdline_status->input.redirection ||
         cmdline_status->output_overwrite.redirection ||
         cmdline_status->output_append.redirection);
+
     bool io_redirection_not_waiting_for_file =
         (!cmdline_status->input.waiting_for_file &&
         !cmdline_status->output_overwrite.waiting_for_file &&
@@ -400,14 +380,19 @@ static void print_error(error_code err)
 static void handle_zombies(command_line_status *cmdline_status, int pid)
 {
     int res;
-    if ((cmdline_status->background_execution) || (pid == -1))
-        cleanup_background_zombies();
-    else {
-        /* cleanup the single foreground zombie */
+    /* there is no process to wait */
+    if (pid == -1)
+        return;
+    else
+    if (!cmdline_status->background_execution) {
+        /* temporarilly turn off the `SIGCHLD` signal desposition */
+        set_signal_disposition(SIGCHLD, SIG_DFL);
         do {
             res = wait(NULL);
             error_handling(res, __FILE__, __LINE__, "wait");
         } while (res != pid);
+        /* turn the `SIGCHLD` signal desposition back on */
+        set_signal_disposition(SIGCHLD, handle_background_zombie_process);
     }
 }
 
