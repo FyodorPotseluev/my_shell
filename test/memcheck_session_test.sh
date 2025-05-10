@@ -53,6 +53,10 @@ cat dir_file.txt
 ../test/test_program>&&dir_file_2.txt
 cat dir_file_2.txt
 cat dir_file.txt
+cat ../LICENSE.txt | ../test/test_program | head -n 3
+cat ../LICENSE.txt | ../test/test_program | head -n 3 | grep 2024
+cat ../LICENSE.txt | cat | cat | ../test/test_program | cat | head -n 3 | cat | grep 2024
+cat < ../LICENSE.txt | cat | cat | ../test/test_program | cat | head -n 3 | cat | grep 2024
 cd ..
 rm -r dir"
 )

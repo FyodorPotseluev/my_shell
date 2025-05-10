@@ -85,6 +85,13 @@ static void reset_str_variables(string *str)
     str->err_code = no_error;
     str->words_list.len = 1;
     str->tmp_wrd.idx = 0;
+    /* --- */
+    reset_cmd_line_item(str->cmd_line.first);
+    str->cmd_line.first->next = NULL;
+    str->cmd_line.last = str->cmd_line.first;
+    str->cmd_line.background_execution = false;
+    str->pipeline.first = NULL;
+    /* --- */
 }
 
 static bool report_if_error(const string *str)
