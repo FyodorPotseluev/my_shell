@@ -1,4 +1,7 @@
-#include "error_handling.h"
+/* handle_syscall_err.c */
+
+#include "handle_syscall_err.h"
+#include <errno.h>
 #include <stdio.h>
 
 void error_handling(

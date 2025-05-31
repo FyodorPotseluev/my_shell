@@ -1,27 +1,30 @@
-/* str_parsing.c */
+/* parse_string.c */
 
-#include "cmd_execution.h"
-#include "str_parsing.h"
-#include "zombie_handling.h"
+#include "parse_string.h"
+#include "handle_signals.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define ESC_ERR \
-    "my_shell: Error: only the characters `\"` and `\\` can be escaped\n"
-
-void free_list_of_words(curr_str_words_list *link_list)
+error_code there_is_a_parsing_error(const string *str)
 {
-    word_item *p = link_list->first;
-    while (p) {
-        word_item *tmp = p;
-        p = p->next;
-        free(tmp->word);
-        free(tmp);
+    if (str->err_code == incorrect_char_escaping)
+        return incorrect_char_escaping;
+    else
+    /* check this error condition before last */
+    /* the `stdin_cleanup` function, which could be called if previous errors
+    were detected, could break the balance of quote signs */
+    if (str->quotation)
+        return unmatched_quotes;
+    else
+    /* check this error condition last */
+    if (str->err_code == no_error)
+        return no_error;
+    else {
+        /* we should never get to this place in the code */
+        fprintf(stderr, "Unexpected error: %s line %d\n", __FILE__, __LINE__);
+        return str->err_code;
     }
-    link_list->first = NULL;
-    link_list->last = NULL;
-    link_list->len = 1;
 }
 
 static void toggle_quotation(string *str)
@@ -44,7 +47,6 @@ static void add_empty_item_to_list_of_words(curr_str_words_list *list)
     list->last->word = NULL;
     list->last->separator_val = none;
     list->last->next = NULL;
-    list->len += 1;
 }
 
 static void double_tmp_wrd_arr(curr_word_dynamic_char_arr *tmp_wrd)
@@ -76,57 +78,11 @@ static void process_end_of_word(string *str)
     str->tmp_wrd.idx = 0;
 }
 
-static void reset_str_variables(string *str)
-{
-    str->word_ended = false;
-    str->str_ended = false;
-    str->quotation = false;
-    str->char_escaping = false;
-    str->err_code = no_error;
-    str->words_list.len = 1;
-    str->tmp_wrd.idx = 0;
-    /* --- */
-    reset_cmd_line_item(str->cmd_line.first);
-    str->cmd_line.first->next = NULL;
-    str->cmd_line.last = str->cmd_line.first;
-    str->cmd_line.background_execution = false;
-    str->pipeline.first = NULL;
-    /* --- */
-}
-
-static bool report_if_error(const string *str)
-{
-    bool error = true;
-    if (str->err_code == incorrect_char_escaping)
-        fprintf(stderr, "%s", ESC_ERR);
-    else
-    /* check this error condition before last */
-    /* the `stdin_cleanup` function, which could be called if previous errors
-    were detected, could break the balance of quote signs */
-    if (str->quotation)
-        fprintf(stderr, "my_shell: Error: unmatched quotes\n");
-    else
-    /* check this error condition last */
-    if (str->err_code == no_error)
-        error = false;
-    return error;
-}
-
 static void stdin_cleanup()
 {
     int c;
     while ((c=getchar_signal_protected() != '\n') && (c != EOF))
         ;
-}
-
-void process_end_of_string(string *str)
-{
-    bool error = report_if_error(str);
-    if (!error)
-        execute_command(str);
-    free_list_of_words(&str->words_list);
-    reset_str_variables(str);
-    printf("> ");
 }
 
 static void complete_word(string *str)

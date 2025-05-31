@@ -1,7 +1,7 @@
-/* zombie_handling.c */
+/* handle_signals.c */
 
-#include "error_handling.h"
-#include "zombie_handling.h"
+#include "handle_signals.h"
+#include "handle_syscall_err.h"
 #include <errno.h>
 #include <signal.h>
 #include <stdio.h>

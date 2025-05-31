@@ -16,7 +16,7 @@ OBJMODULES := $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRCMODULES))
 
 # C compiler configuration
 CC = gcc # using gcc compiler
-CFLAGS = -Wall -Wextra -g3 -O0 -Iinclude -fsanitize=address,undefined
+CFLAGS = -Wall -Wextra -g3 -O0 -Iinclude #-fsanitize=address,undefined
 # CFLAGS options:
 # -Wall		Warnings: all - display every single warning
 # -Wextra	Enable some extra warning flags that are not enabled by -Wall
@@ -46,8 +46,8 @@ all: $(EXECUTABLE)
 # Display useful goals in this Makefile
 help:
 	@echo "Try one of the following make goals:"
-	@echo " > (no goals) compile using sanitizers. Execute programs;"
-	@echo " > D=PRINT_TOKENS_MODE - compile using sanitizers. Print all the tokens;"
+	@echo " > (no goals) compile using sanitizers. Version for programs execution;"
+	@echo " > D=PRINT_TOKENS_MODE - compile using sanitizers. Version for printing tokens;"
 	@echo " > readme - project's documentation"
 	@echo " > run - execute the project"
 	@echo " > print_tokens_test"

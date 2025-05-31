@@ -150,7 +150,7 @@ expected_outputs=(
     ""
     # ../test/test_program > dir_file_2.txt dir_file.txt
     "my_shell: Error: 2nd file name after IO redirection"
-    # > ../test/test_program < dir_file.txt dir_file.txt
+    # ../test/test_program < dir_file.txt dir_file.txt
     "my_shell: Error: 2nd file name after IO redirection"
     # ../test/test_program > dir_file_2.txt dir_file.txt blabla
     "my_shell: Error: 2nd file name after IO redirection"

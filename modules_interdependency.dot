@@ -5,18 +5,52 @@ digraph codeviz {
 
     node [shape=Mrecord, fontsize=12]
 
-    node [fillcolor="#ccccff", style=filled] "./include/cmd_execution.h" [label = "./include/cmd_execution.h"]
-    node [fillcolor="#ccccff", style=filled] "./include/constants.h"     [label = "./include/constants.h"]
-    node [fillcolor="#ccccff", style=filled] "./include/str_parsing.h"   [label = "./include/str_parsing.h"]
-    node [fillcolor="#ff9999", style=filled] "./src/cmd_execution.c"     [label = "./src/cmd_execution.c"]
-    node [fillcolor="#ff9999", style=filled] "./src/main.c"              [label = "./src/main.c"]
-    node [fillcolor="#ff9999", style=filled] "./src/str_parsing.c"       [label = "./src/str_parsing.c"]
+    node [fillcolor="#ccccff", style=filled] "include/cmd_line.h"           [label = "include/cmd_line.h"]
+    node [fillcolor="#ccccff", style=filled] "include/err_code.h"           [label = "include/err_code.h"]
+    node [fillcolor="#ccccff", style=filled] "include/execute_command.h"    [label = "include/execute_command.h"]
+    node [fillcolor="#ccccff", style=filled] "include/handle_signals.h"     [label = "include/handle_signals.h"]
+    node [fillcolor="#ccccff", style=filled] "include/handle_syscall_err.h" [label = "include/handle_syscall_err.h"]
+    node [fillcolor="#ccccff", style=filled] "include/make_cmd_line.h"      [label = "include/make_cmd_line.h"]
+    node [fillcolor="#ccccff", style=filled] "include/parse_string.h"       [label = "include/parse_string.h"]
+    node [fillcolor="#ccccff", style=filled] "include/print_tokens.h"       [label = "include/print_tokens.h"]
+    node [fillcolor="#ccccff", style=filled] "include/str.h"                [label = "include/str.h"]
+    node [fillcolor="#ff9999", style=filled] "src/cmd_line.c"               [label = "src/cmd_line.c"]
+    node [fillcolor="#ff9999", style=filled] "src/execute_command.c"        [label = "src/execute_command.c"]
+    node [fillcolor="#ff9999", style=filled] "src/handle_signals.c"         [label = "src/handle_signals.c"]
+    node [fillcolor="#ff9999", style=filled] "src/handle_syscall_err.c"     [label = "src/handle_syscall_err.c"]
+    node [fillcolor="#ff9999", style=filled] "src/main.c"                   [label = "src/main.c"]
+    node [fillcolor="#ff9999", style=filled] "src/make_cmd_line.c"          [label = "src/make_cmd_line.c"]
+    node [fillcolor="#ff9999", style=filled] "src/parse_string.c"           [label = "src/parse_string.c"]
+    node [fillcolor="#ff9999", style=filled] "src/print_tokens.c"           [label = "src/print_tokens.c"]
+    node [fillcolor="#ff9999", style=filled] "src/str.c"                    [label = "src/str.c"]
 
-    "./include/cmd_execution.h" -> "./include/constants.h"
-    "./include/str_parsing.h"   -> "./include/constants.h"
-    "./src/cmd_execution.c"     -> "./include/cmd_execution.h"
-    "./src/main.c"              -> "./include/str_parsing.h"
-    "./src/main.c"              -> "./include/constants.h"
-    "./src/str_parsing.c"       -> "./include/cmd_execution.h"
-    "./src/str_parsing.c"       -> "./include/str_parsing.h"
+    "include/cmd_line.h"           -> "include/err_code.h"
+    "include/execute_command.h"    -> "include/cmd_line.h"
+    "include/make_cmd_line.h"      -> "include/cmd_line.h"
+    "include/make_cmd_line.h"      -> "include/err_code.h"
+    "include/make_cmd_line.h"      -> "include/str.h"
+    "include/parse_string.h"       -> "include/str.h"
+    "include/print_tokens.h"       -> "include/str.h"
+    "include/str.h"                -> "include/err_code.h"
+    "src/cmd_line.c"               -> "include/cmd_line.h"
+    "src/execute_command.c"        -> "include/execute_command.h"
+    "src/execute_command.c"        -> "include/handle_syscall_err.h"
+    "src/execute_command.c"        -> "include/handle_signals.h"
+    "src/handle_signals.c"         -> "include/handle_signals.h"
+    "src/handle_signals.c"         -> "include/handle_syscall_err.h"
+    "src/handle_syscall_err.c"     -> "include/handle_syscall_err.h"
+    "src/main.c"                   -> "include/cmd_line.h"
+    "src/main.c"                   -> "include/err_code.h"
+    "src/main.c"                   -> "include/make_cmd_line.h"
+    "src/main.c"                   -> "include/execute_command.h"
+    "src/main.c"                   -> "include/print_tokens.h"
+    "src/main.c"                   -> "include/handle_signals.h"
+    "src/main.c"                   -> "include/parse_string.h"
+    "src/main.c"                   -> "include/str.h"
+    "src/make_cmd_line.c"          -> "include/make_cmd_line.h"
+    "src/make_cmd_line.c"          -> "include/handle_syscall_err.h"
+    "src/parse_string.c"           -> "include/parse_string.h"
+    "src/parse_string.c"           -> "include/handle_signals.h"
+    "src/print_tokens.c"           -> "include/print_tokens.h"
+    "src/str.c"                    -> "include/str.h"
 }
