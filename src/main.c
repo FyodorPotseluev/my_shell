@@ -1,25 +1,39 @@
 /* main.c */
 
-#if !defined(EXEC_MODE) && !defined(PRINT_TOKENS_MODE)
-#error Please define either EXEC_MODE or PRINT_TOKENS_MODE
+#if !defined(EXEC_MODE) && !defined(PRINT_TOKENS_MODE) && !defined(LOG)
+#error Please define either EXEC_MODE or PRINT_TOKENS_MODE or LOG
 #endif
 
 #include "cmd_line.h"
 #include "err_code.h"
-#if defined(EXEC_MODE)
+#if defined(LOG)
+#  include "handle_err.h"
+#  include <fcntl.h>
+#  include <sys/stat.h>
+#  include <sys/types.h>
+#endif
+#if defined(EXEC_MODE) || defined(LOG)
 #  include "make_cmd_line.h"
 #  include "execute_command.h"
 #elif defined(PRINT_TOKENS_MODE)
 #  include "print_tokens.h"
 #endif
 #include "handle_signals.h"
-#include "parse_string.h"
-#include "str.h"
+#include "input.h"
+#include "parse_input_string.h"
+#include "read_interactive_string.h"
+#include "reprogram_terminal.h"
+#include "ternary_search_tree.h"
+#include "tokenizer.h"
 #include <errno.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
+
+#if defined(LOG)
+int log_fd;
+#endif
 
 #define ERR_SMTH_STRANGE_HAPPEND \
     "%s, %d: Something went wrong\n"
@@ -69,60 +83,74 @@ static void print_error(error_code err)
     }
 }
 
-static void handle_error(error_code error, string *str, cmd_line *cmdline)
+static void handle_error(
+    error_code error, type_tokenizer *tknzer, type_cmd_line *cmdline
+)
 {
     print_error(error);
-    free_list_of_words(&str->words_list);
+    free_list_of_words(&tknzer->words_list);
     if (cmdline)
         free_cmd_line(cmdline);
-    reset_str_variables(str);
+    reset_tokenizer_variables(tknzer);
 }
 
-static void process_end_of_string(string *str)
+static void process_parsed_string(type_tokenizer *tknzer)
 {
-#if defined(EXEC_MODE)
-    cmd_line cmdline;
+#if defined(EXEC_MODE) || defined(LOG)
+    type_cmd_line cmdline;
 #endif
-    /* provide immutable reference of `str` to `parse_string` module */
-    error_code error = there_is_a_parsing_error(str);
+    /* provide immutable reference of `tknzer` to `parse_input_str` module */
+    error_code error = there_is_a_parsing_error(tknzer);
     if (error) {
-        handle_error(error, str, NULL);
+        handle_error(error, tknzer, NULL);
         return;
     }
 #if defined(PRINT_TOKENS_MODE)
-    print_tokens(&str->words_list);
-    free_list_of_words(&str->words_list, &free_list_of_words_strings);
-#elif defined(EXEC_MODE)
+    print_tokens(&tknzer->words_list);
+    free_list_of_words(&tknzer->words_list);
+#elif defined(EXEC_MODE) || defined(LOG)
     init_cmd_line(&cmdline);
     /* provide mutable reference of `cmdline` to `make_cmd_line` module */
-    /* provide mutable reference of `str` to `make_cmd_line` module */
-    error = make_cmd_line(&cmdline, str);
+    /* provide mutable reference of `tknzer` to `make_cmd_line` module */
+    error = make_cmd_line(&cmdline, tknzer);
     if (error) {
-        handle_error(error, str, &cmdline);
+        handle_error(error, tknzer, &cmdline);
         return;
     }
-    free_list_of_words(&str->words_list);
+    free_list_of_words(&tknzer->words_list);
     /* provide mutable reference of `cmdline` to `execute_command` module */
     execute_command(&cmdline);
     free_cmd_line(&cmdline);
 #endif
-    reset_str_variables(str);
-    printf("> ");
+    reset_tokenizer_variables(tknzer);
 }
 
 int main()
 {
-    string str;
-    init_str(&str);
+    type_input input;
+    type_tokenizer tknzer;
+    type_tst *path_tree = NULL;
+    init_input(&input);
+    init_tokenizer(&tknzer);
+    init_path_tree(&path_tree);
+#if defined(LOG)
+    log_fd = open("log", O_WRONLY|O_CREAT|O_TRUNC|O_APPEND, 0666);
+    error_handling(log_fd, __FILE__, __LINE__, "open");
+#endif
     set_signal_disposition(SIGCHLD, handle_background_zombie_process);
-    printf("> ");
-    while ((str.c=getchar_signal_protected()) != EOF) {
-        /* provide mutable reference of `str` to `parse_string` module */
-        process_character(&str);
-        if (str.str_ended)
-            process_end_of_string(&str);
+    reprogram_terminal_attributes();
+    while (true) {
+        /* we temporarily pass the ownership of `input`, `tknzr` and `path_tree`
+        (the program shutdown is handled there) */
+        read_interactive_string(&input, &tknzer, path_tree);
+        for (input.cur_idx = 0; ; input.cur_idx++) {
+            /* provide immutable references of `tknzer` and `input` to
+            `parse_input_str` module */
+            parse_next_character(&tknzer, &input);
+            if (tknzer.str_ended) {
+                process_parsed_string(&tknzer);
+                break;
+            }
+        }
     }
-    free_str(&str);
-    printf("^D\n");
-    return 0;
 }

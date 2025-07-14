@@ -5,14 +5,14 @@
 
 #include "cmd_line.h"
 #include "err_code.h"
-#include "str.h"
+#include "tokenizer.h"
 
-error_code make_cmd_line(cmd_line *cmdline, string *str);
+error_code make_cmd_line(type_cmd_line *cmdline, type_tokenizer *tknzer);
 /*
-    Converts parsed string tokens into executable command line structure.
+    Converts parsed input string tokens into executable command line structure.
 RECEIVES:
-    - `cmdline` address of `cmd_line` structure (output);
-    - `str` address of parsed `string` structure (input);
+    - `cmdline` address of `type_cmd_line` structure (output);
+    - `tknzer` address of parsed `type_tokenizer` structure (input);
 RETURNES:
     - error code indicating success (`no_error`) or type of error */
 

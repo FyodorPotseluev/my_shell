@@ -3,7 +3,7 @@
 #ifndef PTINT_TOKENS_H_INCLUDED
 #define PTINT_TOKENS_H_INCLUDED
 
-#include "str.h"
+#include "tokenizer.h"
 
 void print_tokens(const curr_str_words_list *words_list);
 /*
@@ -11,7 +11,8 @@ void print_tokens(const curr_str_words_list *words_list);
     Activated with the GCC key `D=PRINT_TOKENS_MODE`.
     Used to check the correctness of parsing string into tokens.
 RECEIVES:
-    - `words_list` address of the list of words (tokens) `str->words_list.first`
+    - `words_list` address of the list of words (tokens):
+    `tknzer->words_list.first`
 */
 
 #endif

@@ -38,7 +38,7 @@ typedef struct tag_cmd_line {
     error_code err_code;
     /* contains the pipes linking processes into a pipeline */
     pipeline_item *pipe;
-} cmd_line;
+} type_cmd_line;
 
 void init_cmd_line_item(execvp_cmd_line *item);
 /*
@@ -46,24 +46,24 @@ void init_cmd_line_item(execvp_cmd_line *item);
 RECEIVES:
     - `item` address of `execvp_cmd_line` linked list item to be initialized */
 
-void init_cmd_line(cmd_line *cmdline);
+void init_cmd_line(type_cmd_line *cmdline);
 /*
-    Initializes complete `cmd_line` structure.
+    Initializes complete `type_cmd_line` structure.
 RECEIVES:
-    - `cmdline` address of `cmd_line` structure */
+    - `cmdline` address of `type_cmd_line` structure */
 
-bool cmd_line_is_empty(const cmd_line *cmdline);
+bool cmd_line_is_empty(const type_cmd_line *cmdline);
 /*
-    Checks if the `cmd_line` structure contains no `execvp_cmd_line` items.
+    Checks if the `type_cmd_line` structure contains no `execvp_cmd_line` items.
 RECEIVES:
-    - `cmdline` address of `cmd_line` structure;
+    - `cmdline` address of `type_cmd_line` structure;
 RETURNES:
     - `true` if empty, `false` otherwise */
 
-void free_cmd_line(cmd_line *cmdline);
+void free_cmd_line(type_cmd_line *cmdline);
 /*
-    Frees memory, dynamically allocated for the `cmd_line` structure;
+    Frees memory, dynamically allocated for the `type_cmd_line` structure;
 RECEIVES:
-    - `cmdline` address of `cmd_line` structure */
+    - `cmdline` address of `type_cmd_line` structure */
 
 #endif

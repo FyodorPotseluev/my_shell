@@ -3,7 +3,7 @@
 #include "cmd_line.h"
 #include <stdlib.h>
 
-bool cmd_line_is_empty(const cmd_line *cmdline)
+bool cmd_line_is_empty(const type_cmd_line *cmdline)
 {
     return (cmdline->first->arr[0]) ? false : true;
 }
@@ -53,7 +53,7 @@ static void free_cmd_line_link_list(execvp_cmd_line *p)
     }
 }
 
-void free_cmd_line(cmd_line *cmdline)
+void free_cmd_line(type_cmd_line *cmdline)
 {
     free_cmd_line_link_list(cmdline->first);
     cmdline->first = NULL;
@@ -80,7 +80,7 @@ void init_cmd_line_item(execvp_cmd_line *item)
     item->next = NULL;
 }
 
-void init_cmd_line(cmd_line *cmdline)
+void init_cmd_line(type_cmd_line *cmdline)
 {
     cmdline->first = malloc(sizeof(execvp_cmd_line));
     init_cmd_line_item(cmdline->first);

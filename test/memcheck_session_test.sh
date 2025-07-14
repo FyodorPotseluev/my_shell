@@ -21,9 +21,9 @@ echo one >> dir_file_2.txt
 cat dir_file_2.txt
 echo two >> dir_file_2.txt
 cat dir_file_2.txt
-> dir_file_3.txt
+>dir_file_3.txt
 cat dir_file_3.txt
-> dir_file.txt
+>dir_file.txt
 cat dir_file.txt
 < non_existing_file
 < dir_file_2.txt
@@ -38,9 +38,9 @@ cat dir_file.txt
 cat dir_file.txt
 ../test/test_program > dir_file.txt < dir_file_2.txt &
 cat dir_file.txt
-> dir_file_2.txt
+>dir_file_2.txt
 ../test/test_program > dir_file_2.txt dir_file.txt
-> ../test/test_program < dir_file.txt dir_file.txt
+../test/test_program < dir_file.txt dir_file.txt
 ../test/test_program > dir_file_2.txt dir_file.txt blabla
 ../test/test_program < dir_file_2.txt dir_file.txt blabla
 ../test/test_program >> dir_file.txt dir_file.txt

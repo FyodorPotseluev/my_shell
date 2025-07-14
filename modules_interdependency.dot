@@ -5,52 +5,88 @@ digraph codeviz {
 
     node [shape=Mrecord, fontsize=12]
 
-    node [fillcolor="#ccccff", style=filled] "include/cmd_line.h"           [label = "include/cmd_line.h"]
-    node [fillcolor="#ccccff", style=filled] "include/err_code.h"           [label = "include/err_code.h"]
-    node [fillcolor="#ccccff", style=filled] "include/execute_command.h"    [label = "include/execute_command.h"]
-    node [fillcolor="#ccccff", style=filled] "include/handle_signals.h"     [label = "include/handle_signals.h"]
-    node [fillcolor="#ccccff", style=filled] "include/handle_syscall_err.h" [label = "include/handle_syscall_err.h"]
-    node [fillcolor="#ccccff", style=filled] "include/make_cmd_line.h"      [label = "include/make_cmd_line.h"]
-    node [fillcolor="#ccccff", style=filled] "include/parse_string.h"       [label = "include/parse_string.h"]
-    node [fillcolor="#ccccff", style=filled] "include/print_tokens.h"       [label = "include/print_tokens.h"]
-    node [fillcolor="#ccccff", style=filled] "include/str.h"                [label = "include/str.h"]
-    node [fillcolor="#ff9999", style=filled] "src/cmd_line.c"               [label = "src/cmd_line.c"]
-    node [fillcolor="#ff9999", style=filled] "src/execute_command.c"        [label = "src/execute_command.c"]
-    node [fillcolor="#ff9999", style=filled] "src/handle_signals.c"         [label = "src/handle_signals.c"]
-    node [fillcolor="#ff9999", style=filled] "src/handle_syscall_err.c"     [label = "src/handle_syscall_err.c"]
-    node [fillcolor="#ff9999", style=filled] "src/main.c"                   [label = "src/main.c"]
-    node [fillcolor="#ff9999", style=filled] "src/make_cmd_line.c"          [label = "src/make_cmd_line.c"]
-    node [fillcolor="#ff9999", style=filled] "src/parse_string.c"           [label = "src/parse_string.c"]
-    node [fillcolor="#ff9999", style=filled] "src/print_tokens.c"           [label = "src/print_tokens.c"]
-    node [fillcolor="#ff9999", style=filled] "src/str.c"                    [label = "src/str.c"]
+    node [fillcolor="#ccccff", style=filled] "include/cmd_line.h"                [label = "include/cmd_line.h"]
+    node [fillcolor="#ccccff", style=filled] "include/err_code.h"                [label = "include/err_code.h"]
+    node [fillcolor="#ccccff", style=filled] "include/execute_command.h"         [label = "include/execute_command.h"]
+    node [fillcolor="#ccccff", style=filled] "include/handle_err.h"              [label = "include/handle_err.h"]
+    node [fillcolor="#ccccff", style=filled] "include/handle_signals.h"          [label = "include/handle_signals.h"]
+    node [fillcolor="#ccccff", style=filled] "include/input.h"                   [label = "include/input.h"]
+    node [fillcolor="#ccccff", style=filled] "include/make_cmd_line.h"           [label = "include/make_cmd_line.h"]
+    node [fillcolor="#ccccff", style=filled] "include/parse_input_string.h"      [label = "include/parse_input_string.h"]
+    node [fillcolor="#ccccff", style=filled] "include/print_tokens.h"            [label = "include/print_tokens.h"]
+    node [fillcolor="#ccccff", style=filled] "include/read_interactive_string.h" [label = "include/read_interactive_string.h"]
+    node [fillcolor="#ccccff", style=filled] "include/reprogram_terminal.h"      [label = "include/reprogram_terminal.h"]
+    node [fillcolor="#ccccff", style=filled] "include/shut_down_my_shell.h"      [label = "include/shut_down_my_shell.h"]
+    node [fillcolor="#ccccff", style=filled] "include/ternary_search_tree.h"     [label = "include/ternary_search_tree.h"]
+    node [fillcolor="#ccccff", style=filled] "include/tokenizer.h"               [label = "include/tokenizer.h"]
+    node [fillcolor="#ff9999", style=filled] "src/cmd_line.c"                    [label = "src/cmd_line.c"]
+    node [fillcolor="#ff9999", style=filled] "src/execute_command.c"             [label = "src/execute_command.c"]
+    node [fillcolor="#ff9999", style=filled] "src/handle_err.c"                  [label = "src/handle_err.c"]
+    node [fillcolor="#ff9999", style=filled] "src/handle_signals.c"              [label = "src/handle_signals.c"]
+    node [fillcolor="#ff9999", style=filled] "src/input.c"                       [label = "src/input.c"]
+    node [fillcolor="#ff9999", style=filled] "src/main.c"                        [label = "src/main.c"]
+    node [fillcolor="#ff9999", style=filled] "src/make_cmd_line.c"               [label = "src/make_cmd_line.c"]
+    node [fillcolor="#ff9999", style=filled] "src/parse_input_string.c"          [label = "src/parse_input_string.c"]
+    node [fillcolor="#ff9999", style=filled] "src/print_tokens.c"                [label = "src/print_tokens.c"]
+    node [fillcolor="#ff9999", style=filled] "src/read_interactive_string.c"     [label = "src/read_interactive_string.c"]
+    node [fillcolor="#ff9999", style=filled] "src/reprogram_terminal.c"          [label = "src/reprogram_terminal.c"]
+    node [fillcolor="#ff9999", style=filled] "src/shut_down_my_shell.c"          [label = "src/shut_down_my_shell.c"]
+    node [fillcolor="#ff9999", style=filled] "src/ternary_search_tree.c"         [label = "src/ternary_search_tree.c"]
+    node [fillcolor="#ff9999", style=filled] "src/tokenizer.c"                   [label = "src/tokenizer.c"]
 
-    "include/cmd_line.h"           -> "include/err_code.h"
-    "include/execute_command.h"    -> "include/cmd_line.h"
-    "include/make_cmd_line.h"      -> "include/cmd_line.h"
-    "include/make_cmd_line.h"      -> "include/err_code.h"
-    "include/make_cmd_line.h"      -> "include/str.h"
-    "include/parse_string.h"       -> "include/str.h"
-    "include/print_tokens.h"       -> "include/str.h"
-    "include/str.h"                -> "include/err_code.h"
-    "src/cmd_line.c"               -> "include/cmd_line.h"
-    "src/execute_command.c"        -> "include/execute_command.h"
-    "src/execute_command.c"        -> "include/handle_syscall_err.h"
-    "src/execute_command.c"        -> "include/handle_signals.h"
-    "src/handle_signals.c"         -> "include/handle_signals.h"
-    "src/handle_signals.c"         -> "include/handle_syscall_err.h"
-    "src/handle_syscall_err.c"     -> "include/handle_syscall_err.h"
-    "src/main.c"                   -> "include/cmd_line.h"
-    "src/main.c"                   -> "include/err_code.h"
-    "src/main.c"                   -> "include/make_cmd_line.h"
-    "src/main.c"                   -> "include/execute_command.h"
-    "src/main.c"                   -> "include/print_tokens.h"
-    "src/main.c"                   -> "include/handle_signals.h"
-    "src/main.c"                   -> "include/parse_string.h"
-    "src/main.c"                   -> "include/str.h"
-    "src/make_cmd_line.c"          -> "include/make_cmd_line.h"
-    "src/make_cmd_line.c"          -> "include/handle_syscall_err.h"
-    "src/parse_string.c"           -> "include/parse_string.h"
-    "src/parse_string.c"           -> "include/handle_signals.h"
-    "src/print_tokens.c"           -> "include/print_tokens.h"
-    "src/str.c"                    -> "include/str.h"
+    "include/cmd_line.h"                -> "include/err_code.h"
+    "include/execute_command.h"         -> "include/cmd_line.h"
+    "include/make_cmd_line.h"           -> "include/cmd_line.h"
+    "include/make_cmd_line.h"           -> "include/err_code.h"
+    "include/make_cmd_line.h"           -> "include/tokenizer.h"
+    "include/parse_input_string.h"      -> "include/err_code.h"
+    "include/parse_input_string.h"      -> "include/input.h"
+    "include/parse_input_string.h"      -> "include/tokenizer.h"
+    "include/print_tokens.h"            -> "include/tokenizer.h"
+    "include/read_interactive_string.h" -> "include/input.h"
+    "include/read_interactive_string.h" -> "include/ternary_search_tree.h"
+    "include/read_interactive_string.h" -> "include/tokenizer.h"
+    "include/shut_down_my_shell.h"      -> "include/input.h"
+    "include/shut_down_my_shell.h"      -> "include/ternary_search_tree.h"
+    "include/shut_down_my_shell.h"      -> "include/tokenizer.h"
+    "include/tokenizer.h"               -> "include/err_code.h"
+    "src/cmd_line.c"                    -> "include/cmd_line.h"
+    "src/execute_command.c"             -> "include/execute_command.h"
+    "src/execute_command.c"             -> "include/handle_err.h"
+    "src/execute_command.c"             -> "include/handle_signals.h"
+    "src/handle_err.c"                  -> "include/handle_err.h"
+    "src/handle_signals.c"              -> "include/handle_signals.h"
+    "src/handle_signals.c"              -> "include/handle_err.h"
+    "src/input.c"                       -> "include/input.h"
+    "src/main.c"                        -> "include/cmd_line.h"
+    "src/main.c"                        -> "include/err_code.h"
+    "src/main.c"                        -> "include/handle_err.h"
+    "src/main.c"                        -> "include/make_cmd_line.h"
+    "src/main.c"                        -> "include/execute_command.h"
+    "src/main.c"                        -> "include/print_tokens.h"
+    "src/main.c"                        -> "include/handle_signals.h"
+    "src/main.c"                        -> "include/input.h"
+    "src/main.c"                        -> "include/parse_input_string.h"
+    "src/main.c"                        -> "include/read_interactive_string.h"
+    "src/main.c"                        -> "include/reprogram_terminal.h"
+    "src/main.c"                        -> "include/ternary_search_tree.h"
+    "src/main.c"                        -> "include/tokenizer.h"
+    "src/make_cmd_line.c"               -> "include/make_cmd_line.h"
+    "src/make_cmd_line.c"               -> "include/handle_err.h"
+    "src/parse_input_string.c"          -> "include/parse_input_string.h"
+    "src/parse_input_string.c"          -> "include/handle_signals.h"
+    "src/print_tokens.c"                -> "include/print_tokens.h"
+    "src/read_interactive_string.c"     -> "include/read_interactive_string.h"
+    "src/read_interactive_string.c"     -> "include/handle_signals.h"
+    "src/read_interactive_string.c"     -> "include/handle_err.h"
+    "src/read_interactive_string.c"     -> "include/shut_down_my_shell.h"
+    "src/reprogram_terminal.c"          -> "include/reprogram_terminal.h"
+    "src/reprogram_terminal.c"          -> "include/handle_err.h"
+    "src/shut_down_my_shell.c"          -> "include/shut_down_my_shell.h"
+    "src/shut_down_my_shell.c"          -> "include/reprogram_terminal.h"
+    "src/shut_down_my_shell.c"          -> "include/handle_err.h"
+    "src/ternary_search_tree.c"         -> "include/ternary_search_tree.h"
+    "src/ternary_search_tree.c"         -> "include/read_interactive_string.h"
+    "src/ternary_search_tree.c"         -> "include/handle_err.h"
+    "src/tokenizer.c"                   -> "include/tokenizer.h"
 }

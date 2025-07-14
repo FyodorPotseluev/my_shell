@@ -37,8 +37,12 @@ CFLAGS = -Wall -Wextra -g3 -O0 -Iinclude #-fsanitize=address,undefined
 ifeq ($(D),PRINT_TOKENS_MODE)
     CFLAGS += -D PRINT_TOKENS_MODE
 else
-    CFLAGS += -D EXEC_MODE
-    D = EXEC_MODE
+    ifeq ($(D),LOG)
+        CFLAGS += -D LOG
+    else
+        CFLAGS += -D EXEC_MODE
+        D = EXEC_MODE
+    endif
 endif
 
 all: $(EXECUTABLE)
@@ -46,8 +50,9 @@ all: $(EXECUTABLE)
 # Display useful goals in this Makefile
 help:
 	@echo "Try one of the following make goals:"
-	@echo " > (no goals) compile using sanitizers. Version for programs execution;"
-	@echo " > D=PRINT_TOKENS_MODE - compile using sanitizers. Version for printing tokens;"
+	@echo " > (no goals) Version for programs execution"
+	@echo " > D=PRINT_TOKENS_MODE - Version for printing tokens"
+	@echo " > D=LOG - Version for input logging"
 	@echo " > readme - project's documentation"
 	@echo " > run - execute the project"
 	@echo " > print_tokens_test"
@@ -59,6 +64,7 @@ help:
 	@echo "     - memory check the print_tokens_test"
 	@echo " > debug - begin a gdb process for the executable"
 	@echo " > leak_search - run the project under valgrind"
+	@echo " > leak_search_debug - run the project under valgrind. If error - wait for gdb"
 	@echo " > clean - delete build files in project"
 	@echo " > variables - print Makefile's variables"
 
@@ -104,6 +110,9 @@ debug:
 
 leak_search:
 	valgrind --tool=memcheck --leak-check=full --errors-for-leak-kinds=definite,indirect,possible --show-leak-kinds=definite,indirect,possible $(EXECUTABLE)
+
+leak_search_debug:
+	valgrind --tool=memcheck --leak-check=full --errors-for-leak-kinds=definite,indirect,possible --show-leak-kinds=definite,indirect,possible --vgdb=yes --vgdb-error=1 $(EXECUTABLE)
 
 clean:
 	rm -f $(OBJ_DIR)/* $(EXECUTABLE)

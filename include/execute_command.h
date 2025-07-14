@@ -5,10 +5,10 @@
 
 #include "cmd_line.h"
 
-void execute_command(cmd_line *cmdline);
+void execute_command(type_cmd_line *cmdline);
 /*
     Executes the command line with proper process management.
 RECEIVES:
-    - `cmdline` address of the `cmd_line` structure */
+    - `cmdline` address of the `type_cmd_line` structure */
 
 #endif

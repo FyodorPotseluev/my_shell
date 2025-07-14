@@ -23,4 +23,9 @@ int getchar_signal_protected();
 RETURNES:
     - character read from input */
 
+int read_signal_protected(int fd, void *buf, int count);
+/*
+    The `read` syscall with signal interruption protection
+*/
+
 #endif

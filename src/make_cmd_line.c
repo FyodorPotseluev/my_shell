@@ -1,7 +1,7 @@
 /* make_cmd_line.c */
 
 #include "make_cmd_line.h"
-#include "handle_syscall_err.h"
+#include "handle_err.h"
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -106,7 +106,7 @@ static handle_separator_status appoint_io_redirect_file(
 }
 
 static handle_separator_status start_background_execution(
-    cmd_line *cmdline, word_item *curr_word, int idx, bool *next_step
+    type_cmd_line *cmdline, word_item *curr_word, int idx, bool *next_step
 )
 {
     if (curr_word->separator_val == background_operator) {
@@ -118,7 +118,7 @@ static handle_separator_status start_background_execution(
         return move_on;
 }
 
-void add_new_cmd_line_item(cmd_line *cmdline)
+void add_new_cmd_line_item(type_cmd_line *cmdline)
 {
     /* add item at the end of `cmd_line` link list */
     cmdline->last->next = malloc(sizeof(execvp_cmd_line));
@@ -126,7 +126,7 @@ void add_new_cmd_line_item(cmd_line *cmdline)
     init_cmd_line_item(cmdline->last);
 }
 
-void add_new_pipeline_item(cmd_line *cmdline)
+void add_new_pipeline_item(type_cmd_line *cmdline)
 {
     /* add `pipeline_item` at the beginning of `pipe` linked list */
     int res;
@@ -138,7 +138,7 @@ void add_new_pipeline_item(cmd_line *cmdline)
 }
 
 static handle_separator_status split_cmdline_and_add_pipeline(
-    cmd_line *cmdline, word_item *curr_word, int *idx, bool *next_step
+    type_cmd_line *cmdline, word_item *curr_word, int *idx, bool *next_step
 )
 {
     if (curr_word->separator_val == pipe_operator) {
@@ -202,7 +202,7 @@ static handle_separator_status toggle_io_redirection(
 }
 
 static error_code handle_possible_separator(
-    cmd_line *cmdline, word_item *curr_word, int *idx, bool *next_step
+    type_cmd_line *cmdline, word_item *curr_word, int *idx, bool *next_step
 )
 {
     handle_separator_status status;
@@ -233,9 +233,9 @@ static error_code handle_possible_separator(
     return no_error;
 }
 
-error_code make_cmd_line(cmd_line *cmdline, string *str)
+error_code make_cmd_line(type_cmd_line *cmdline, type_tokenizer *tknzer)
 {
-    word_item *p = str->words_list.first;
+    word_item *p = tknzer->words_list.first;
     int i = 0;
     for (;; p=p->next, i++) {
         if (cmdline->last->arr_len == i)

@@ -1,7 +1,7 @@
-/* str.h */
+/* tokenizer.h */
 
-#ifndef STR_H_INCLUDED
-#define STR_H_INCLUDED
+#ifndef TOKENIZER_H_INCLUDED
+#define TOKENIZER_H_INCLUDED
 
 #include "err_code.h"
 #include <stdbool.h>
@@ -41,7 +41,7 @@ typedef struct tag_curr_word_dynamic_char_arr {
     int arr_len;
 } curr_word_dynamic_char_arr;
 
-typedef struct tag_string {
+typedef struct struct_tokenizer {
     bool word_ended, str_ended, quotation, char_escaping;
     int c;
     error_code err_code;
@@ -49,39 +49,39 @@ typedef struct tag_string {
     curr_word_dynamic_char_arr tmp_wrd;
     /* contains the linked list in wich the current string is stored */
     curr_str_words_list words_list;
-} string;
+} type_tokenizer;
 
-bool words_list_is_empty(const string *str);
+bool words_list_is_empty(const type_tokenizer *tknzer);
 /*
-    Checks if the `str->words_list` contains no `word_item`'s.
+    Checks if the `tknzer->words_list` contains no `word_item`'s.
 RECEIVES:
-    - `str` address of `string` structure;
+    - `tknzer` address of `type_tokenizer` structure;
 RETURNES:
-    - `true` if `str->words_list` is empty, `false` otherwise */
+    - `true` if `tknzer->words_list` is empty, `false` otherwise */
 
-void init_str(string *str);
+void init_tokenizer(type_tokenizer *tknzer);
 /*
-    Initializes `string` structure.
+    Initializes `type_tokenizer` structure.
 RECEIVES:
-    - `str` address of `string` structure */
+    - `tknzer` address of `type_tokenizer` structure */
 
-void reset_str_variables(string *str);
+void reset_tokenizer_variables(type_tokenizer *tknzer);
 /*
-    Resets the `string` structure fields to get ready to work with the next
+    Resets the `type_tokenizer` structure fields to get ready to work with the next
 `my_shell` interpreter command.
 RECEIVES:
-    - `str` address of `string` structure */
+    - `tknzer` address of `type_tokenizer` structure */
 
 void free_list_of_words(curr_str_words_list *link_list);
 /*
-    Frees memory allocated for `str->words_list`;
+    Frees memory allocated for `tknzer->words_list`;
 RECEIVES:
-    - `link_list` address of words list (`str->words_list`) */
+    - `link_list` address of words list (`tknzer->words_list`) */
 
-void free_str(string *str);
+void free_tokenizer(type_tokenizer *tknzer);
 /*
-    Frees memory, dynamically allocated for the `string` structure;
+    Frees memory, dynamically allocated for the `type_tokenizer` structure;
 RECEIVES:
-    - `str` address of `string` structure */
+    - `tknzer` address of `type_tokenizer` structure */
 
 #endif

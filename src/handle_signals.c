@@ -1,7 +1,7 @@
 /* handle_signals.c */
 
 #include "handle_signals.h"
-#include "handle_syscall_err.h"
+#include "handle_err.h"
 #include <errno.h>
 #include <signal.h>
 #include <stdio.h>
@@ -10,20 +10,37 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-static bool getchar_in_block_mode_was_interrupted_by_signal()
+static bool getchar_in_block_mode_was_interrupted_by_signal(int chr)
 {
-    return (errno == EINTR);
+    return ((chr == EOF) && (errno == EINTR));
 }
 
 int getchar_signal_protected()
 {
     while (true) {
         int chr = getchar();
-        if (getchar_in_block_mode_was_interrupted_by_signal()) {
+        if (getchar_in_block_mode_was_interrupted_by_signal(chr)) {
             errno = 0;
             continue;
         } else
             return chr;
+    }
+}
+
+static bool read_in_block_mode_was_interrupted_by_signal(int read_res)
+{
+    return ((read_res == -1) && (errno = EINTR));
+}
+
+int read_signal_protected(int fd, void *buf, int count)
+{
+    while (true) {
+        int read_res = read(fd, buf, count);
+        if (read_in_block_mode_was_interrupted_by_signal(read_res)) {
+            errno = 0;
+            continue;
+        } else
+            return read_res;
     }
 }
 

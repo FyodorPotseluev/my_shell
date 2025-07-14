@@ -38,9 +38,9 @@ echo one >> dir_file_2.txt
 cat dir_file_2.txt
 echo two >> dir_file_2.txt
 cat dir_file_2.txt
-> dir_file_3.txt
+>dir_file_3.txt
 cat dir_file_3.txt
-> dir_file.txt
+>dir_file.txt
 cat dir_file.txt
 < non_existing_file
 < dir_file_2.txt
@@ -55,9 +55,9 @@ cat dir_file.txt
 cat dir_file.txt
 ../test/test_program > dir_file.txt < dir_file_2.txt &
 cat dir_file.txt
-> dir_file_2.txt
+>dir_file_2.txt
 ../test/test_program > dir_file_2.txt dir_file.txt
-> ../test/test_program < dir_file.txt dir_file.txt
+../test/test_program < dir_file.txt dir_file.txt
 ../test/test_program > dir_file_2.txt dir_file.txt blabla
 ../test/test_program < dir_file_2.txt dir_file.txt blabla
 ../test/test_program >> dir_file.txt dir_file.txt
@@ -81,113 +81,113 @@ rm -r dir"
 # Expected outputs after EACH command in the sequence
 expected_outputs=(
     # mkdir dir
-    ""
+    "mkdir dir"
     # cd dir
-    ""
+    "cd dir"
     # echo one > dir_file.txt
-    ""
+    "echo one > dir_file.txt"
     # cat dir_file.txt
-    "one"
+    $'cat dir_file.txt\none'
     # echo one > background_work_test.txt &
-    ""
+    "echo one > background_work_test.txt &"
     # cat background_work_test.txt
-    "one"
+    $'cat background_work_test.txt\none'
     # echo one > background_work_test_2.txt&
-    ""
+    "echo one > background_work_test_2.txt&"
     # cat background_work_test.txt
-    "one"
+    $'cat background_work_test.txt\none'
     # echo two > dir_file.txt
-    ""
+    "echo two > dir_file.txt"
     # cat dir_file.txt
-    "two"
+    $'cat dir_file.txt\ntwo'
     # ../test/test_program < non_existing_file
-    "my_shell: non_existing_file: No such file or directory"
+    $'../test/test_program < non_existing_file\nmy_shell: non_existing_file: No such file or directory'
     # ../test/test_program < dir_file.txt
-    "(two)"
+    $'../test/test_program < dir_file.txt\n(two)'
     # echo one >> dir_file_2.txt
-    ""
+    "echo one >> dir_file_2.txt"
     # cat dir_file_2.txt
-    "one"
+    $'cat dir_file_2.txt\none'
     # echo two >> dir_file_2.txt
-    ""
+    "echo two >> dir_file_2.txt"
     # cat dir_file_2.txt
-    $'one\ntwo'
-    # > dir_file_3.txt
-    ""
+    $'cat dir_file_2.txt\none\ntwo'
+    # >dir_file_3.txt
+    ">dir_file_3.txt"
     # cat dir_file_3.txt
-    ""
-    # > dir_file.txt
-    ""
+    "cat dir_file_3.txt"
+    # >dir_file.txt
+    ">dir_file.txt"
     # cat dir_file.txt
-    ""
+    "cat dir_file.txt"
     # < non_existing_file
-    "my_shell: non_existing_file: No such file or directory"
+    $'< non_existing_file\nmy_shell: non_existing_file: No such file or directory'
     # < dir_file_2.txt
-    ""
+    "< dir_file_2.txt"
     # cat dir_file_2.txt
-    $'one\ntwo'
+    $'cat dir_file_2.txt\none\ntwo'
     # >> dir_file_4.txt
-    ""
+    ">> dir_file_4.txt"
     # cat dir_file_4.txt
-    ""
+    "cat dir_file_4.txt"
     # >> dir_file_2.txt
-    ""
+    ">> dir_file_2.txt"
     # cat dir_file_2.txt
-    $'one\ntwo'
+    $'cat dir_file_2.txt\none\ntwo'
     # ../test/test_program < dir_file_2.txt > dir_file.txt
-    ""
+    "../test/test_program < dir_file_2.txt > dir_file.txt"
     # cat dir_file.txt
-    $'(one)\n(two)'
+    $'cat dir_file.txt\n(one)\n(two)'
     # ../test/test_program > dir_file.txt < dir_file_2.txt
-    ""
+    "../test/test_program > dir_file.txt < dir_file_2.txt"
     # cat dir_file.txt
-    $'(one)\n(two)'
+    $'cat dir_file.txt\n(one)\n(two)'
     # ../test/test_program > dir_file.txt < dir_file_2.txt &
-    ""
+    "../test/test_program > dir_file.txt < dir_file_2.txt &"
     # cat dir_file.txt
-    $'(one)\n(two)'
-    # > dir_file_2.txt
-    ""
+    $'cat dir_file.txt\n(one)\n(two)'
+    # >dir_file_2.txt
+    ">dir_file_2.txt"
     # ../test/test_program > dir_file_2.txt dir_file.txt
-    "my_shell: Error: 2nd file name after IO redirection"
+    $'../test/test_program > dir_file_2.txt dir_file.txt\nmy_shell: Error: 2nd file name after IO redirection'
     # ../test/test_program < dir_file.txt dir_file.txt
-    "my_shell: Error: 2nd file name after IO redirection"
+    $'../test/test_program < dir_file.txt dir_file.txt\nmy_shell: Error: 2nd file name after IO redirection'
     # ../test/test_program > dir_file_2.txt dir_file.txt blabla
-    "my_shell: Error: 2nd file name after IO redirection"
+    $'../test/test_program > dir_file_2.txt dir_file.txt blabla\nmy_shell: Error: 2nd file name after IO redirection'
     # ../test/test_program < dir_file_2.txt dir_file.txt blabla
-    "my_shell: Error: 2nd file name after IO redirection"
+    $'../test/test_program < dir_file_2.txt dir_file.txt blabla\nmy_shell: Error: 2nd file name after IO redirection'
     # ../test/test_program >> dir_file.txt dir_file.txt
-    "my_shell: Error: 2nd file name after IO redirection"
+    $'../test/test_program >> dir_file.txt dir_file.txt\nmy_shell: Error: 2nd file name after IO redirection'
     # ../test/test_program >> dir_file.txt dir_file.txt blabla
-    "my_shell: Error: 2nd file name after IO redirection"
+    $'../test/test_program >> dir_file.txt dir_file.txt blabla\nmy_shell: Error: 2nd file name after IO redirection'
     # ../test/test_program > dir_file_2.txt > dir_file.txt
-    "my_shell: Error: > or < used twice, or > together with >>"
+    $'../test/test_program > dir_file_2.txt > dir_file.txt\nmy_shell: Error: > or < used twice, or > together with >>'
     # ../test/test_program < dir_file.txt < dir_file_2.txt
-    "my_shell: Error: > or < used twice, or > together with >>"
+    $'../test/test_program < dir_file.txt < dir_file_2.txt\nmy_shell: Error: > or < used twice, or > together with >>'
     # ../test/test_program >> dir_file_2.txt > dir_file.txt
-    "my_shell: Error: > or < used twice, or > together with >>"
+    $'../test/test_program >> dir_file_2.txt > dir_file.txt\nmy_shell: Error: > or < used twice, or > together with >>'
     # ../test/test_program > dir_file_2.txt >> dir_file.txt
-    "my_shell: Error: > or < used twice, or > together with >>"
+    $'../test/test_program > dir_file_2.txt >> dir_file.txt\nmy_shell: Error: > or < used twice, or > together with >>'
     # ../test/test_program > && dir_file_2.txt
-    "my_shell: Error: separator right after IO redirection"
+    $'../test/test_program > && dir_file_2.txt\nmy_shell: Error: separator right after IO redirection'
     # ../test/test_program>&&dir_file_2.txt
-    "my_shell: Error: separator right after IO redirection"
+    $'../test/test_program>&&dir_file_2.txt\nmy_shell: Error: separator right after IO redirection'
     # cat dir_file_2.txt
-    ""
+    "cat dir_file_2.txt"
     # cat dir_file.txt
-    $'(one)\n(two)'
+    $'cat dir_file.txt\n(one)\n(two)'
     # cat ../LICENSE.txt | ../test/test_program | head -n 3
-    $'(MIT) (License)\n\n(Copyright) ((c)) (2024) (FyodorPotseluev)'
+    $'cat ../LICENSE.txt | ../test/test_program | head -n 3\n(MIT) (License)\n\n(Copyright) ((c)) (2024) (FyodorPotseluev)'
     # cat ../LICENSE.txt | ../test/test_program | head -n 3 | grep 2024
-    "(Copyright) ((c)) (2024) (FyodorPotseluev)"
+    $'cat ../LICENSE.txt | ../test/test_program | head -n 3 | grep 2024\n(Copyright) ((c)) (2024) (FyodorPotseluev)'
     # cat ../LICENSE.txt | cat | cat | ../test/test_program | cat | head -n 3 | cat | grep 2024
-    "(Copyright) ((c)) (2024) (FyodorPotseluev)"
+    $'cat ../LICENSE.txt | cat | cat | ../test/test_program | cat | head -n 3 | cat | grep 2024\n(Copyright) ((c)) (2024) (FyodorPotseluev)'
     # cat < ../LICENSE.txt | cat | cat | ../test/test_program | cat | head -n 3 | cat | grep 2024
-    "(Copyright) ((c)) (2024) (FyodorPotseluev)"
+    $'cat < ../LICENSE.txt | cat | cat | ../test/test_program | cat | head -n 3 | cat | grep 2024\n(Copyright) ((c)) (2024) (FyodorPotseluev)'
     # cd ..
-    ""
+    "cd .."
     # rm -r dir
-    ""
+    "rm -r dir"
 )
 # Run tests
 passed=0

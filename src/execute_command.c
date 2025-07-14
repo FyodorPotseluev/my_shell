@@ -1,11 +1,7 @@
 /* execute_command.c */
 
-#if !defined(EXEC_MODE) && !defined(PRINT_TOKENS_MODE)
-#error Please define either EXEC_MODE or PRINT_TOKENS_MODE
-#endif
-
 #include "execute_command.h"
-#include "handle_syscall_err.h"
+#include "handle_err.h"
 #include "handle_signals.h"
 #include <errno.h>
 #include <fcntl.h>
@@ -87,7 +83,7 @@ static void wait_for_cmd_linde_item(const execvp_cmd_line *item)
         {}
 }
 
-static void handle_zombies(const cmd_line *cmdline)
+static void handle_zombies(const type_cmd_line *cmdline)
 {
     const execvp_cmd_line *p;
     if (!cmdline->background_execution) {
@@ -256,7 +252,7 @@ static void launch_process(
     close_all_pipes(first_pipe);
 }
 
-void execute_command(cmd_line *cmdline)
+void execute_command(type_cmd_line *cmdline)
 {
     if (change_dir_command(cmdline->first)) {
         /* if we have `cd` command ran inside pipe */
