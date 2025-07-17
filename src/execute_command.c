@@ -18,6 +18,18 @@ extern char *environ;
 
 #define ERR_NO_SUCH_FILE \
     "my_shell: %s: No such file or directory\n"
+#define ERR_WRONG_CTRL_TERM_FD \
+    "%s:%d: `tcsetpgrp` got NOT the control term fd of the calling process\n"
+
+typedef struct tag_io {
+    int fd_input, fd_output;
+} type_io;
+
+typedef struct tag_pipe {
+    const pipeline_item *prev;
+    const pipeline_item *next;
+    const pipeline_item *first;
+} type_pipe;
 
 static void change_to_home_directory()
 {
@@ -83,6 +95,16 @@ static void wait_for_cmd_linde_item(const execvp_cmd_line *item)
         {}
 }
 
+static void make_process_group_foreground(
+    int pgid, const type_cmd_line *setup, const char *file_name, int line_num
+)
+{
+    int res = tcsetpgrp(setup->session_control_terminal_fd, pgid);
+    if (res != pgid && res > 1)
+        fprintf(stderr, ERR_WRONG_CTRL_TERM_FD, file_name, line_num);
+    error_handling(res, file_name, line_num, "tcsetpgrp");
+}
+
 static void handle_zombies(const type_cmd_line *cmdline)
 {
     const execvp_cmd_line *p;
@@ -92,6 +114,9 @@ static void handle_zombies(const type_cmd_line *cmdline)
         /* wait for each process of the `cmdline` linked list */
         for (p = cmdline->first; p; p = p->next)
             wait_for_cmd_linde_item(p);
+        make_process_group_foreground(
+            cmdline->my_shell_group_pgid, cmdline, __FILE__, __LINE__
+        );
         /* turn the `SIGCHLD` signal desposition back on */
         set_signal_disposition(SIGCHLD, handle_background_zombie_process);
     }
@@ -202,54 +227,91 @@ static void set_up_pipeline(
     }
 }
 
-static void set_up_and_exec_child(
-    const execvp_cmd_line *cmdline, int fd_input, int fd_output,
-    const pipeline_item *prev_pipe, const pipeline_item *next_pipe,
-    const pipeline_item *first_pipe
+static void execvp_error_handling(
+    const char *cmd_name, const char *file_name, int line_number
 )
 {
-    set_up_pipeline(prev_pipe, next_pipe, first_pipe);
-    io_redirection(cmdline, fd_input, fd_output);
+    fprintf(
+        stderr, "%s, %d, %s: %s:", file_name, line_number, "execvp", cmd_name
+    );
+    perror("");
+    fflush(stderr);
+    _exit(1);
+}
+
+static void add_process_to_existing_pipeline_process_group(int pgid)
+{
+    int res = setpgid(0, pgid);
+    error_handling(res, __FILE__, __LINE__, "setpgid");
+}
+
+static void create_new_process_group()
+{
+    int res = setpgid(0, 0);
+    error_handling(res, __FILE__, __LINE__, "setpgid");
+}
+
+static void set_up_and_exec_child(
+   const execvp_cmd_line *cmdline, const type_io *io, const type_pipe *pipe
+)
+{
+    set_up_pipeline(pipe->prev, pipe->next, pipe->first);
+    io_redirection(cmdline, io->fd_input, io->fd_output);
     if (cmdline->arr[0]) {
         execvp(cmdline->arr[0], cmdline->arr);
-        fprintf(
-            stderr, "%s, %d, %s: %s:",
-            __FILE__, __LINE__, "execvp", cmdline->arr[0]
-        );
-        perror("");
-        fflush(stderr);
-        _exit(1);
+        /* if we got here - `execvp` failed */
+        execvp_error_handling(cmdline->arr[0], __FILE__, __LINE__);
     }
     _exit(0);
 }
 
+static bool new_process_group_doesnt_exist_yet(int pgid)
+{
+    return (pgid == 0) ? true : false;
+}
+
+static void manage_process_group(int pgid, const type_cmd_line *cmdline_setup)
+{
+    if (new_process_group_doesnt_exist_yet(pgid)) {
+        create_new_process_group();
+        if (!cmdline_setup->background_execution)
+            make_process_group_foreground(
+                getpgrp(), cmdline_setup, __FILE__, __LINE__
+            );
+    } else
+        add_process_to_existing_pipeline_process_group(pgid);
+}
+
 static void launch_process(
-    execvp_cmd_line *cmdline, const pipeline_item *first_pipe
+    const type_cmd_line *cmdline_setup, execvp_cmd_line *cmdline,
+    const pipeline_item *first_pipe
 )
 {
-    const pipeline_item *prev_pipe = NULL, *next_pipe = first_pipe;
+    int pgid = 0;
+    type_pipe pipe = { NULL, first_pipe, first_pipe };
     while (true) {
-        int fd_input = 0, fd_output = 0, res;
-        res = open_io_redirecton_files(cmdline, &fd_input, &fd_output);
+        type_io io = { 0, 0 };
+        int res = open_io_redirecton_files(cmdline, &io.fd_input, &io.fd_output);
         if (res == -1)
             goto exit;
         fflush(stderr);
         cmdline->pid = fork();
         error_handling(cmdline->pid, __FILE__, __LINE__, "fork");
         if (cmdline->pid == 0) {
-            set_up_and_exec_child(
-                cmdline, fd_input, fd_output, prev_pipe, next_pipe, first_pipe
-            );
+            manage_process_group(pgid, cmdline_setup);
+            set_up_and_exec_child(cmdline, &io, &pipe);
         }
-        close_io_redirection_files(fd_input, fd_output);
+        if (pgid == 0)
+            pgid = cmdline->pid;
+        close_io_redirection_files(io.fd_input, io.fd_output);
         cmdline = cmdline->next;
         if (!cmdline)
             break;
-        prev_pipe = next_pipe;
-        next_pipe = next_pipe->next;
+        pipe.prev = pipe.next;
+        pipe.next = pipe.next->next;
     }
     exit:
-    close_all_pipes(first_pipe);
+    close_all_pipes(pipe.first);
 }
 
 void execute_command(type_cmd_line *cmdline)
@@ -263,6 +325,6 @@ void execute_command(type_cmd_line *cmdline)
         handle_change_dir_command(cmdline->first);
         return;
     }
-    launch_process(cmdline->first, cmdline->pipe);
+    launch_process(cmdline, cmdline->first, cmdline->pipe);
     handle_zombies(cmdline);
 }

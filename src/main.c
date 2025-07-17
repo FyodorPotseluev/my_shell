@@ -10,7 +10,6 @@
 #  include "handle_err.h"
 #  include <fcntl.h>
 #  include <sys/stat.h>
-#  include <sys/types.h>
 #endif
 #if defined(EXEC_MODE) || defined(LOG)
 #  include "make_cmd_line.h"
@@ -30,9 +29,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #if defined(LOG)
 int log_fd;
+
+static int open_log_file()
+{
+    log_fd = open("log", O_WRONLY|O_CREAT|O_TRUNC|O_APPEND, 0666);
+    error_handling(log_fd, __FILE__, __LINE__, "open");
+    return log_fd;
+}
 #endif
 
 #define ERR_SMTH_STRANGE_HAPPEND \
@@ -94,7 +102,9 @@ static void handle_error(
     reset_tokenizer_variables(tknzer);
 }
 
-static void process_parsed_string(type_tokenizer *tknzer)
+static void process_parsed_string(
+    type_tokenizer *tknzer, const type_process_envir *process_envir
+)
 {
 #if defined(EXEC_MODE) || defined(LOG)
     type_cmd_line cmdline;
@@ -109,7 +119,7 @@ static void process_parsed_string(type_tokenizer *tknzer)
     print_tokens(&tknzer->words_list);
     free_list_of_words(&tknzer->words_list);
 #elif defined(EXEC_MODE) || defined(LOG)
-    init_cmd_line(&cmdline);
+    init_cmd_line(&cmdline, process_envir);
     /* provide mutable reference of `cmdline` to `make_cmd_line` module */
     /* provide mutable reference of `tknzer` to `make_cmd_line` module */
     error = make_cmd_line(&cmdline, tknzer);
@@ -125,20 +135,29 @@ static void process_parsed_string(type_tokenizer *tknzer)
     reset_tokenizer_variables(tknzer);
 }
 
+static void my_shell_setup(
+    type_input *input, type_tokenizer *tknzer,
+    type_tst **path_tree, type_process_envir *process_envir
+)
+{
+    init_input(input);
+    init_tokenizer(tknzer);
+    init_path_tree(path_tree);
+    get_process_envir(process_envir);
+#if defined(LOG)
+    log_fd = open_log_file();
+#endif
+    set_signals_dispostion();
+    reprogram_terminal_attributes();
+}
+
 int main()
 {
     type_input input;
     type_tokenizer tknzer;
     type_tst *path_tree = NULL;
-    init_input(&input);
-    init_tokenizer(&tknzer);
-    init_path_tree(&path_tree);
-#if defined(LOG)
-    log_fd = open("log", O_WRONLY|O_CREAT|O_TRUNC|O_APPEND, 0666);
-    error_handling(log_fd, __FILE__, __LINE__, "open");
-#endif
-    set_signal_disposition(SIGCHLD, handle_background_zombie_process);
-    reprogram_terminal_attributes();
+    type_process_envir process_envir;
+    my_shell_setup(&input, &tknzer, &path_tree, &process_envir);
     while (true) {
         /* we temporarily pass the ownership of `input`, `tknzr` and `path_tree`
         (the program shutdown is handled there) */
@@ -148,7 +167,7 @@ int main()
             `parse_input_str` module */
             parse_next_character(&tknzer, &input);
             if (tknzer.str_ended) {
-                process_parsed_string(&tknzer);
+                process_parsed_string(&tknzer, &process_envir);
                 break;
             }
         }

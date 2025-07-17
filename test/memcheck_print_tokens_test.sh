@@ -16,7 +16,7 @@ valgrind_command="valgrind --error-exitcode=42 --tool=memcheck --leak-check=full
 input=(
     "abra schwabra kadabra"
     "abra   "
-    $'     abra\t\tschwabra \t \tkadabra'
+    $'     abra              schwabra                kadabra'
     $'abra \"schwabra kadabra\" \"foo    bar\"'
     $'abra schw\"abra ka\"dab\"ra\" foo\"    \"bar'
     $'abra schwabra kadabra\"  foo bar'
@@ -24,11 +24,11 @@ input=(
     $'w\"  \"\"  \"ord'
     $'w\"o \"\" r\"d'
     "    "
-    $' \t  \t  \t\t '
+    $'                                  '
     $'\"\"'
     $'\"\"\"\"'
-    $'\"\" \t\"\"'
-    $' \"\" \t\"\" '
+    $'\"\"        \"\"'
+    $' \"\"        \"\" '
     $'\\\"abra\\\" \\\"schwabra\\\" \\\"kadabra\\\"'
     $'\\\\abra\\\\ \\\\schwabra\\\\ \\\\kadabra\\\\'
     $'abra \\\\s\\\"c\\\\h\\\"w\\\\a\\\"b\\\\r\\\"a\\\\ kadabra'

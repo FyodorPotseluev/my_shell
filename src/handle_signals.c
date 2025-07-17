@@ -88,3 +88,9 @@ void set_signal_disposition(int signum, void (*handler)(int))
     res = sigaction(signum, &act, NULL);
     error_handling(res, __FILE__, __LINE__, "sigaction");
 }
+
+void set_signals_dispostion()
+{
+    set_signal_disposition(SIGCHLD, handle_background_zombie_process);
+    set_signal_disposition(SIGTTOU, SIG_IGN);
+}

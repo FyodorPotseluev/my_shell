@@ -17,6 +17,10 @@ RECEIVES:
     - `sig_num` signal number to handle;
     - `handler` the address of the function to handle the signal */
 
+void set_signals_dispostion();
+/*
+    Sets the signal disposition for the `my_shell` program */
+
 int getchar_signal_protected();
 /*
     Gets character from input with signal interruption protection.

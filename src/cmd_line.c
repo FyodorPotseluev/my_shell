@@ -80,7 +80,9 @@ void init_cmd_line_item(execvp_cmd_line *item)
     item->next = NULL;
 }
 
-void init_cmd_line(type_cmd_line *cmdline)
+void init_cmd_line(
+    type_cmd_line *cmdline, const type_process_envir *process_envir
+)
 {
     cmdline->first = malloc(sizeof(execvp_cmd_line));
     init_cmd_line_item(cmdline->first);
@@ -88,4 +90,7 @@ void init_cmd_line(type_cmd_line *cmdline)
     cmdline->background_execution = false;
     cmdline->err_code = no_error;
     cmdline->pipe = NULL;
+    cmdline->session_control_terminal_fd
+        = process_envir->session_control_terminal_fd;
+    cmdline->my_shell_group_pgid = process_envir->my_shell_group_pgid;
 }

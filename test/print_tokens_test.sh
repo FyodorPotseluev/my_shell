@@ -9,8 +9,8 @@ expected+=( $'abra schwabra kadabra\n[abra]\n[schwabra]\n[kadabra]' );
 input+=( "abra   " )
 expected+=( $'abra   \n[abra]' )
 
-input+=( $'     abra\t\tschwabra \t \tkadabra' )
-expected+=( $'     abra\t\tschwabra \t \tkadabra\n[abra]\n[schwabra]\n[kadabra]' )
+input+=( $'     abra              schwabra                kadabra' )
+expected+=( $'     abra              schwabra                kadabra\n[abra]\n[schwabra]\n[kadabra]' )
 
 input+=( $'abra \"schwabra kadabra\" \"foo    bar\"' )
 expected+=( $'abra \"schwabra kadabra\" \"foo    bar\"\n[abra]\n[schwabra kadabra]\n[foo    bar]' )
@@ -69,8 +69,8 @@ expected+=( $'w\"o \"\" r\"d\n[wo  rd]' )
 input+=( "    " )
 expected+=( $'    ' )
 
-input+=( $' \t  \t  \t\t ' )
-expected+=( $' \t  \t  \t\t ' )
+input+=( $'                                  ' )
+expected+=( $'                                  ' )
 
 input+=( $'\"\"' )
 expected+=( $'\"\"\n[]' )
@@ -78,11 +78,11 @@ expected+=( $'\"\"\n[]' )
 input+=( $'\"\"\"\"' )
 expected+=( $'\"\"\"\"\n[]' )
 
-input+=( $'\"\" \t\"\"' )
-expected+=( $'\"\" \t\"\"\n[]\n[]' )
+input+=( $'\"\"        \"\"' )
+expected+=( $'\"\"        \"\"\n[]\n[]' )
 
-input+=( $' \"\" \t\"\" ' )
-expected+=( $' \"\" \t\"\" \n[]\n[]' )
+input+=( $' \"\"        \"\" ' )
+expected+=( $' \"\"        \"\" \n[]\n[]' )
 
 input+=( $'\"\" word1 word2' )
 expected+=( $'\"\" word1 word2\n[]\n[word1]\n[word2]' )

@@ -4,6 +4,7 @@
 #define CMD_LINE_H_INCLUDED
 
 #include "err_code.h"
+#include "process_environment.h"
 #include <stdbool.h>
 
 enum cmd_line_h_consts {
@@ -38,6 +39,7 @@ typedef struct tag_cmd_line {
     error_code err_code;
     /* contains the pipes linking processes into a pipeline */
     pipeline_item *pipe;
+    int session_control_terminal_fd, my_shell_group_pgid;
 } type_cmd_line;
 
 void init_cmd_line_item(execvp_cmd_line *item);
@@ -46,11 +48,14 @@ void init_cmd_line_item(execvp_cmd_line *item);
 RECEIVES:
     - `item` address of `execvp_cmd_line` linked list item to be initialized */
 
-void init_cmd_line(type_cmd_line *cmdline);
+void init_cmd_line(
+    type_cmd_line *cmdline, const type_process_envir *process_envir
+);
 /*
     Initializes complete `type_cmd_line` structure.
 RECEIVES:
-    - `cmdline` address of `type_cmd_line` structure */
+    - `cmdline` address of `type_cmd_line` structure
+    - `process_envir` address of `process_envir` structure */
 
 bool cmd_line_is_empty(const type_cmd_line *cmdline);
 /*
